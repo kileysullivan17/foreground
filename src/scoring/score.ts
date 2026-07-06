@@ -64,7 +64,7 @@ function importanceFactor(item: Item): ScoreFactor | null {
   return { key: 'importance', points, label: `Importance ${item.importance}/5` }
 }
 
-function unblocksFactor(item: Item, openDependents: Item[]): ScoreFactor | null {
+function unblocksFactor(openDependents: Item[]): ScoreFactor | null {
   if (openDependents.length === 0) return null
   const names = openDependents.map((d) => `“${d.title}”`).slice(0, 2).join(' and ')
   const more = openDependents.length > 2 ? ` and ${openDependents.length - 2} more` : ''
@@ -115,7 +115,7 @@ export function scoreItem(item: Item, allItems: Item[], opts: ScoreOptions = {})
   const factors = [
     deadlineFactor(item, now),
     importanceFactor(item),
-    unblocksFactor(item, openDependents),
+    unblocksFactor(openDependents),
     stalenessFactor(item, now),
     effortFactor(item, opts.quickWins ?? false),
     momentumFactor(item),

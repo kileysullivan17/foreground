@@ -9,9 +9,10 @@ export const itemFormSchema = z.object({
   title: z.string().trim().min(1, 'Give it a name'),
   area: areaSchema,
   notes: z.string().default(''),
-  projectId: z.string().nullable().default(null),
+  // selects/date inputs yield '' for "unset" — normalize to null
+  projectId: z.preprocess((v) => (v === '' ? null : v), z.string().nullable().default(null)),
   effort: effortSchema.default('M'),
-  hardDeadline: z.string().nullable().default(null),
+  hardDeadline: z.preprocess((v) => (v === '' ? null : v), z.string().nullable().default(null)),
   importance: z.coerce.number().int().min(1).max(5).default(3),
   dependsOn: z.array(z.string()).default([]),
 })
@@ -23,7 +24,7 @@ export const projectFormSchema = z.object({
   name: z.string().trim().min(1, 'Give it a name'),
   area: areaSchema,
   goal: z.string().default(''),
-  targetDate: z.string().nullable().default(null),
+  targetDate: z.preprocess((v) => (v === '' ? null : v), z.string().nullable().default(null)),
 })
 
 export type ProjectFormValues = z.input<typeof projectFormSchema>

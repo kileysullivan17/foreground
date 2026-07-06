@@ -57,11 +57,16 @@ export class LocalProvider implements DataProvider {
   }
 
   async updateItem(id: string, patch: ItemPatch): Promise<Item> {
-    const item = this.store.items.find((i) => i.id === id)
-    if (!item) throw new Error(`item not found: ${id}`)
-    Object.assign(item, patch)
+    // Replace, never mutate in place: TanStack Query's structural sharing
+    // compares old and new results, and a mutated shared object would make
+    // them "equal", freezing every derived view (ranking included).
+    const idx = this.store.items.findIndex((i) => i.id === id)
+    const existing = this.store.items[idx]
+    if (!existing) throw new Error(`item not found: ${id}`)
+    const updated = { ...existing, ...patch }
+    this.store.items[idx] = updated
     save(this.store)
-    return { ...item }
+    return updated
   }
 
   async createProject(input: NewProject): Promise<Project> {
@@ -76,11 +81,13 @@ export class LocalProvider implements DataProvider {
   }
 
   async updateProject(id: string, patch: ProjectPatch): Promise<Project> {
-    const project = this.store.projects.find((p) => p.id === id)
-    if (!project) throw new Error(`project not found: ${id}`)
-    Object.assign(project, patch)
+    const idx = this.store.projects.findIndex((p) => p.id === id)
+    const existing = this.store.projects[idx]
+    if (!existing) throw new Error(`project not found: ${id}`)
+    const updated = { ...existing, ...patch }
+    this.store.projects[idx] = updated
     save(this.store)
-    return { ...project }
+    return updated
   }
 
   async touchItem(id: string, note: string): Promise<Item> {
