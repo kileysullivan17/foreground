@@ -1,0 +1,48 @@
+{
+  "comment": "Canonical seed. Day fields are offsets from load time: targetInDays/deadlineInDays are days in the future (negative = overdue), createdDaysAgo/touchedDaysAgo are days in the past. src/data/local.ts and scripts/gen-seed-sql.mjs both consume this file.",
+  "projects": [
+    { "key": "proj-groceries", "name": "Groceries system", "area": "home", "goal": "One predictable weekly shop; stop running out of staples.", "targetInDays": null },
+    { "key": "proj-insulation", "name": "Insulation", "area": "home", "goal": "Attic and crawlspace insulated before it gets cold.", "targetInDays": 100 },
+    { "key": "proj-fence", "name": "Fence", "area": "home", "goal": "Back fence replaced, new gate hung and swinging true.", "targetInDays": 60 },
+    { "key": "proj-welding", "name": "Welding", "area": "home", "goal": "Confident enough with the MIG to fab the gate frame myself.", "targetInDays": null },
+    { "key": "proj-grant", "name": "Grant application", "area": "home", "goal": "Equipment grant submitted before the window closes.", "targetInDays": 12 },
+    { "key": "proj-asana", "name": "Asana builds", "area": "work", "goal": "Intake and approvals builds shipped to the team.", "targetInDays": 21 },
+    { "key": "proj-tracker", "name": "Item tracker", "area": "work", "goal": "Item tracker MVP live for the ops team.", "targetInDays": 45 }
+  ],
+  "items": [
+    { "key": "itm-staples-list", "title": "Write the master staples list", "notes": "Everything we always need — pantry, fridge, freezer, cleaning.", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 3, "createdDaysAgo": 20, "touchedDaysAgo": 16 },
+    { "key": "itm-shelf-labels", "title": "Label the pantry shelves", "notes": "So things go back where they came from.", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 2, "createdDaysAgo": 18, "touchedDaysAgo": 18 },
+    { "key": "itm-weekly-slot", "title": "Pick a fixed weekly shop day and calendar it", "notes": "", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 3, "createdDaysAgo": 12, "touchedDaysAgo": 3 },
+
+    { "key": "itm-insul-quotes", "title": "Get two more insulation quotes", "notes": "Have one quote from the contractor's; need comparisons before booking.", "area": "home", "projectKey": "proj-insulation", "effort": "M", "importance": 4, "deadlineInDays": 20, "createdDaysAgo": 40, "touchedDaysAgo": 26 },
+    { "key": "itm-attic-clear", "title": "Clear the attic so installers can get in", "notes": "Boxes to the garage, old carpet to the dump.", "area": "home", "projectKey": "proj-insulation", "effort": "M", "importance": 3, "createdDaysAgo": 35, "touchedDaysAgo": 30 },
+    { "key": "itm-insul-book", "title": "Book the insulation install", "notes": "", "area": "home", "projectKey": "proj-insulation", "effort": "S", "importance": 4, "dependsOnKeys": ["itm-insul-quotes", "itm-attic-clear"], "createdDaysAgo": 40, "touchedDaysAgo": 40 },
+
+    { "key": "itm-fence-measure", "title": "Measure the fence line and count posts", "notes": "", "area": "home", "projectKey": "proj-fence", "effort": "S", "importance": 3, "createdDaysAgo": 15, "touchedDaysAgo": 10 },
+    { "key": "itm-fence-posts", "title": "Buy posts, rails, and concrete", "notes": "Check truck rental hours first.", "area": "home", "projectKey": "proj-fence", "effort": "M", "importance": 3, "dependsOnKeys": ["itm-fence-measure"], "createdDaysAgo": 15, "touchedDaysAgo": 15 },
+    { "key": "itm-fence-set", "title": "Set the new fence posts", "notes": "", "area": "home", "projectKey": "proj-fence", "effort": "L", "importance": 3, "dependsOnKeys": ["itm-fence-posts"], "createdDaysAgo": 15, "touchedDaysAgo": 15 },
+    { "key": "itm-gate-frame", "title": "Weld up the gate frame", "notes": "Square tube is already in the shop.", "area": "home", "projectKey": "proj-fence", "effort": "M", "importance": 3, "dependsOnKeys": ["itm-weld-practice", "itm-fence-set"], "createdDaysAgo": 15, "touchedDaysAgo": 15 },
+    { "key": "itm-gate-hang", "title": "Hang the gate", "notes": "", "area": "home", "projectKey": "proj-fence", "effort": "M", "importance": 2, "dependsOnKeys": ["itm-gate-frame"], "createdDaysAgo": 15, "touchedDaysAgo": 15 },
+    { "key": "itm-fence-permit", "title": "Check if the fence needs a permit", "notes": "", "area": "home", "projectKey": "proj-fence", "effort": "S", "importance": 3, "status": "done", "createdDaysAgo": 20, "touchedDaysAgo": 12, "lastTouchNote": "No permit needed under 6 ft." },
+
+    { "key": "itm-weld-practice", "title": "Run practice beads on scrap until they're clean", "notes": "The thing standing between me and the gate frame.", "area": "home", "projectKey": "proj-welding", "effort": "M", "importance": 3, "createdDaysAgo": 45, "touchedDaysAgo": 34 },
+    { "key": "itm-weld-gas", "title": "Refill the shielding gas bottle", "notes": "", "area": "home", "projectKey": "proj-welding", "effort": "S", "importance": 2, "createdDaysAgo": 34, "touchedDaysAgo": 34 },
+    { "key": "itm-weld-course", "title": "Evening welding course at the college", "notes": "", "area": "home", "projectKey": "proj-welding", "effort": "L", "importance": 2, "status": "parked", "createdDaysAgo": 60, "touchedDaysAgo": 41, "lastTouchNote": "Full until fall; revisit in September." },
+
+    { "key": "itm-grant-quotes", "title": "Gather equipment quotes for the budget", "notes": "Need three written quotes per line item.", "area": "home", "projectKey": "proj-grant", "effort": "M", "importance": 5, "deadlineInDays": 5, "createdDaysAgo": 30, "touchedDaysAgo": 8 },
+    { "key": "itm-grant-budget", "title": "Write the budget section", "notes": "", "area": "home", "projectKey": "proj-grant", "effort": "M", "importance": 5, "deadlineInDays": 8, "dependsOnKeys": ["itm-grant-quotes"], "createdDaysAgo": 30, "touchedDaysAgo": 30 },
+    { "key": "itm-grant-narrative", "title": "Draft the project narrative", "notes": "Two pages max. Lead with the community angle.", "area": "home", "projectKey": "proj-grant", "effort": "L", "importance": 5, "deadlineInDays": 8, "status": "in_progress", "createdDaysAgo": 30, "touchedDaysAgo": 6, "lastTouchNote": "Intro and need statement drafted." },
+    { "key": "itm-grant-submit", "title": "Final read-through and submit the grant", "notes": "", "area": "home", "projectKey": "proj-grant", "effort": "S", "importance": 5, "deadlineInDays": 11, "dependsOnKeys": ["itm-grant-budget", "itm-grant-narrative"], "createdDaysAgo": 30, "touchedDaysAgo": 30 },
+
+    { "key": "itm-intake-form", "title": "Build the intake form in Asana", "notes": "Fields agreed with ops on Tuesday.", "area": "work", "projectKey": "proj-asana", "section": "In flight", "assignee": "Me", "effort": "M", "importance": 4, "status": "in_progress", "createdDaysAgo": 14, "touchedDaysAgo": 1, "lastTouchNote": "Form fields done; conditional sections left." },
+    { "key": "itm-intake-rules", "title": "Wire the intake routing rules", "notes": "", "area": "work", "projectKey": "proj-asana", "section": "In flight", "assignee": "Me", "effort": "M", "importance": 4, "deadlineInDays": 10, "dependsOnKeys": ["itm-intake-form"], "createdDaysAgo": 14, "touchedDaysAgo": 14 },
+    { "key": "itm-approvals-map", "title": "Map the approvals flow with the ops lead", "notes": "30 minutes on a whiteboard settles this.", "area": "work", "projectKey": "proj-asana", "section": "Backlog", "assignee": "Me", "effort": "S", "importance": 3, "createdDaysAgo": 21, "touchedDaysAgo": 21 },
+    { "key": "itm-approvals-build", "title": "Build the approvals workflow", "notes": "", "area": "work", "projectKey": "proj-asana", "section": "Backlog", "assignee": "Me", "effort": "L", "importance": 4, "deadlineInDays": 21, "dependsOnKeys": ["itm-approvals-map"], "createdDaysAgo": 21, "touchedDaysAgo": 21 },
+
+    { "key": "itm-tracker-fields", "title": "Freeze the item tracker field list", "notes": "Ops keeps adding fields. Freeze it and move on.", "area": "work", "projectKey": "proj-tracker", "section": "Backlog", "assignee": "Me", "effort": "S", "importance": 4, "createdDaysAgo": 28, "touchedDaysAgo": 22 },
+    { "key": "itm-tracker-schema", "title": "Draft the tracker schema and views", "notes": "", "area": "work", "projectKey": "proj-tracker", "section": "Backlog", "assignee": "Me", "effort": "M", "importance": 3, "dependsOnKeys": ["itm-tracker-fields"], "createdDaysAgo": 28, "touchedDaysAgo": 28 },
+    { "key": "itm-tracker-demo", "title": "Demo the tracker prototype to ops", "notes": "", "area": "work", "projectKey": "proj-tracker", "section": "Backlog", "assignee": "Me", "effort": "M", "importance": 3, "deadlineInDays": 30, "dependsOnKeys": ["itm-tracker-schema"], "createdDaysAgo": 28, "touchedDaysAgo": 28 },
+
+    { "key": "itm-inbox-zero", "title": "Clear the ops shared inbox backlog", "notes": "Twenty minutes of triage, mostly archiving.", "area": "work", "projectKey": null, "effort": "S", "importance": 2, "createdDaysAgo": 9, "touchedDaysAgo": 9 }
+  ]
+}
