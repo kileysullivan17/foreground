@@ -6,6 +6,9 @@ import { draftStoryHeuristic, type GroomDraft } from './groomDraft'
  * HTML, and the local stub takes over, so the flow never dead-ends.
  */
 export async function requestGroomDraft(rawTitle: string): Promise<GroomDraft> {
+  // The Vite dev server has no serverless runtime; skip the doomed fetch
+  // (and its console 404) and draft locally.
+  if (import.meta.env.DEV) return draftStoryHeuristic(rawTitle)
   try {
     const res = await fetch('/api/groom', {
       method: 'POST',

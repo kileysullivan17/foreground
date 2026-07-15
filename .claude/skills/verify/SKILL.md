@@ -24,9 +24,11 @@ SHOTS=<screenshot-dir> node scripts/verify-drive.mjs
 
 `scripts/verify-drive.mjs` (Playwright, headless Chromium already installed
 via `npx playwright install chromium`) walks every screen: initial ranking +
-factor labels, quick-wins re-rank, one-tap Done, blocked section, staleness
-order + touch-it, inline project add/edit, re-rank after importance edit,
-fast capture with deadline, and probes (empty title, area-filter isolation).
+factor labels, quick-wins re-rank, one-tap Done, blocked section with the
+dependency chain, staleness order + touch-it, inline project add/edit,
+re-rank after importance edit, fast capture with deadline, probes (empty
+title, area-filter isolation), then v2: the Product kanban (capture a raw
+idea, groom it, accept the draft, tap-to-move columns) and the About view.
 Grep output for `STEP`/`PROBE` lines; `DONE` = full pass. Screenshots land
 in `$SHOTS`.
 

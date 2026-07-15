@@ -147,5 +147,56 @@ console.log('PROBE work filter top3:', JSON.stringify(cards.slice(0, 3).map((c) 
 const nonWork = cards.some((c) => ['Sharpen the mower blade', 'Write the master staples list'].includes(c.title ?? ''))
 console.log('PROBE home items leaked into work filter:', nonWork)
 
+// ---- Step 10: Product board renders with the seeded backlog ----
+await gotoTab('Product', 'Product')
+const cols = await page.$$eval('section h2', (hs) => hs.map((h) => h.textContent))
+console.log('STEP10 columns:', JSON.stringify(cols))
+await page.screenshot({ path: `${SHOTS}/10-product-board.png` })
+
+await page.getByLabel('Capture an idea').fill('Idea captured during the verify drive')
+await page
+  .locator('section', { hasText: 'Backlog' })
+  .first()
+  .getByRole('button', { name: 'Add', exact: true })
+  .click()
+await page.waitForTimeout(300)
+const backlogText = await page.locator('section', { hasText: 'Backlog' }).first().textContent()
+console.log('STEP10 capture shows as raw:', backlogText?.includes('Idea captured during the verify drive'))
+
+// ---- Step 11: groom a raw capture, accept the draft ----
+await page.locator('section ul button', { hasText: 'Idea captured during the verify drive' }).first().click()
+await page.waitForSelector('[role="dialog"]')
+await page.getByRole('button', { name: 'Groom this' }).click()
+await page.waitForSelector('text=Proposed draft')
+const draftTitle = await page.getByLabel('Story title').inputValue()
+console.log('STEP11 draft in story form:', draftTitle.startsWith('As a '))
+await page.screenshot({ path: `${SHOTS}/11-groom-draft.png` })
+await page.getByRole('button', { name: 'Save', exact: true }).click()
+await page.waitForTimeout(400)
+const groomedChip = await page.locator('[role="dialog"] span').first().textContent()
+console.log('STEP11 status after accept:', groomedChip)
+
+// ---- Step 12: tap-to-move between columns ----
+await page.getByRole('button', { name: 'In progress', exact: true }).click()
+await page.waitForTimeout(300)
+const movedChip = await page.locator('[role="dialog"] span').first().textContent()
+console.log('STEP12 status after move:', movedChip)
+await page.getByText('Close', { exact: true }).click()
+await page.waitForTimeout(200)
+// grooming rewrote the title into story form, which lowercases the capture
+const inProgressCol = await page
+  .locator('section')
+  .filter({ has: page.locator('h2', { hasText: 'In progress' }) })
+  .first()
+  .textContent()
+console.log('STEP12 card landed in column:', inProgressCol?.includes('idea captured during the verify drive'))
+
+// ---- Step 13: About view from the header ----
+await page.getByRole('link', { name: 'About' }).click()
+await page.waitForSelector('h1:has-text("About Foreground")')
+const aboutText = await page.locator('main').textContent()
+console.log('STEP13 about mentions framework:', aboutText?.includes('WSJF'))
+await page.screenshot({ path: `${SHOTS}/13-about.png` })
+
 await browser.close()
 console.log('DONE')
