@@ -197,6 +197,22 @@ Judgment calls made during the build, and why. Newest last.
     requested, read, or stored in this run; the supervised session just
     sets env and flips `GROOM_LLM=live`.
 
+## v2: portfolio polish
+
+40. **About lives behind a header link, not a sixth tab.** The bottom nav
+    holds the five working screens; About is read once and linked from the
+    wordmark header on every screen, one tap from anywhere without
+    spending permanent navigation on it.
+41. **Seed scrub for screenshot safety.** The seed carried a real first
+    name as assignee, a colleague's name, and a business name. Replaced
+    with "Me", "the ops lead", and "the first contractor" in the seed and
+    the drive script; `supabase/seed.sql` regenerated. Existing local
+    stores keep old text until reseeded, which is fine: the requirement is
+    that fresh loads are clean.
+42. **App copy follows the house writing rules** (no em dashes, plain
+    specific prose). Two v1 leftovers fixed in passing: the Blocked
+    section toggle and a seed note.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

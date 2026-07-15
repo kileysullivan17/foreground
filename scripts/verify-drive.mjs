@@ -75,7 +75,7 @@ await page.screenshot({ path: `${SHOTS}/5-putoff.png` })
 
 const staleTop = await page.$eval('main > ul > li h3', (h) => h.textContent)
 await page.getByRole('button', { name: 'Touch it' }).first().click()
-await page.getByPlaceholder(/where does this stand/).fill('Called the contractor’s back; two more quotes booked for Tuesday')
+await page.getByPlaceholder(/where does this stand/).fill('Called the first contractor back; two more quotes booked for Tuesday')
 await page.getByRole('button', { name: 'Save' }).click()
 await page.waitForTimeout(300)
 staleTitles = await page.$$eval('main > ul > li', (lis) => lis.slice(0, 2).map((li) => li.querySelector('h3')?.textContent))

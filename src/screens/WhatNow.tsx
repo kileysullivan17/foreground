@@ -147,7 +147,7 @@ export function WhatNow() {
             className="text-sm font-medium text-zinc-500 dark:text-zinc-400"
             onClick={() => setShowBlocked((v) => !v)}
           >
-            {showBlocked ? '▾' : '▸'} Blocked ({blockedShown.length}) — waiting on other items
+            {showBlocked ? '▾' : '▸'} Blocked ({blockedShown.length}): waiting on other items
           </button>
           {showBlocked && (
             <ul className="mt-3 space-y-3">

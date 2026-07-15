@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
-import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { WhatNow } from './screens/WhatNow'
 import { PutOff } from './screens/PutOff'
 import { Projects } from './screens/Projects'
 import { AddItem } from './screens/AddItem'
 import { Product } from './screens/Product'
+import { About } from './screens/About'
 
 const tabs = [
   { to: '/', label: 'Now', symbol: '◎' },
@@ -31,6 +32,12 @@ export default function App() {
             <circle cx="21" cy="27" r="12" className="fill-indigo-500" />
           </svg>
           <span className="text-sm font-semibold tracking-tight">Foreground</span>
+          <Link
+            to="/about"
+            className="ml-auto text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+          >
+            About
+          </Link>
         </header>
         <Routes>
           <Route path="/" element={<WhatNow />} />
@@ -38,6 +45,7 @@ export default function App() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/product" element={<Product />} />
           <Route path="/add" element={<AddItem />} />
+          <Route path="/about" element={<About />} />
         </Routes>
 
         <nav className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">

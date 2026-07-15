@@ -10,11 +10,11 @@
     { "key": "proj-tracker", "name": "Item tracker", "area": "work", "goal": "Item tracker MVP live for the ops team.", "targetInDays": 45 }
   ],
   "items": [
-    { "key": "itm-staples-list", "title": "Write the master staples list", "notes": "Everything we always need — pantry, fridge, freezer, cleaning.", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 3, "createdDaysAgo": 20, "touchedDaysAgo": 16 },
+    { "key": "itm-staples-list", "title": "Write the master staples list", "notes": "Everything we always need: pantry, fridge, freezer, cleaning.", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 3, "createdDaysAgo": 20, "touchedDaysAgo": 16 },
     { "key": "itm-shelf-labels", "title": "Label the pantry shelves", "notes": "So things go back where they came from.", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 2, "createdDaysAgo": 18, "touchedDaysAgo": 18 },
     { "key": "itm-weekly-slot", "title": "Pick a fixed weekly shop day and calendar it", "notes": "", "area": "home", "projectKey": "proj-groceries", "effort": "S", "importance": 3, "createdDaysAgo": 12, "touchedDaysAgo": 3 },
 
-    { "key": "itm-insul-quotes", "title": "Get two more insulation quotes", "notes": "Have one quote from the contractor's; need comparisons before booking.", "area": "home", "projectKey": "proj-insulation", "effort": "M", "importance": 4, "deadlineInDays": 20, "createdDaysAgo": 40, "touchedDaysAgo": 26 },
+    { "key": "itm-insul-quotes", "title": "Get two more insulation quotes", "notes": "Have one quote in hand; need two more before booking.", "area": "home", "projectKey": "proj-insulation", "effort": "M", "importance": 4, "deadlineInDays": 20, "createdDaysAgo": 40, "touchedDaysAgo": 26 },
     { "key": "itm-attic-clear", "title": "Clear the attic so installers can get in", "notes": "Boxes to the garage, old carpet to the dump.", "area": "home", "projectKey": "proj-insulation", "effort": "M", "importance": 3, "createdDaysAgo": 35, "touchedDaysAgo": 30 },
     { "key": "itm-insul-book", "title": "Book the insulation install", "notes": "", "area": "home", "projectKey": "proj-insulation", "effort": "S", "importance": 4, "dependsOnKeys": ["itm-insul-quotes", "itm-attic-clear"], "createdDaysAgo": 40, "touchedDaysAgo": 40 },
 
