@@ -14,13 +14,11 @@ const factorTone: Record<string, string> = {
   deadline: 'text-red-700 dark:text-red-400',
   importance: 'text-indigo-700 dark:text-indigo-400',
   unblocks: 'text-amber-700 dark:text-amber-400',
-  staleness: 'text-orange-700 dark:text-orange-400',
-  effort: 'text-emerald-700 dark:text-emerald-400',
   momentum: 'text-sky-700 dark:text-sky-400',
 }
 
 function ScoredCard({ scored, projects }: { scored: ScoredItem; projects: Project[] }) {
-  const { item, score, factors, blockedBy } = scored
+  const { item, score, delayFactors, size, staleness, blockedBy } = scored
   const project = projects.find((p) => p.id === item.projectId)
   const blocked = blockedBy.length > 0
 
@@ -54,14 +52,24 @@ function ScoredCard({ scored, projects }: { scored: ScoredItem; projects: Projec
         </p>
       ) : (
         <ul className="mt-2 space-y-0.5">
-          {factors.map((f) => (
+          {delayFactors.map((f) => (
             <li key={f.key} className={`text-sm ${factorTone[f.key] ?? ''}`}>
-              <span className="inline-block w-9 font-semibold tabular-nums">
-                {f.points > 0 ? `+${f.points}` : f.points}
-              </span>
+              <span className="inline-block w-9 font-semibold tabular-nums">+{f.points}</span>
               {f.label}
             </li>
           ))}
+          <li className="text-sm text-emerald-700 dark:text-emerald-400">
+            <span className="inline-block w-9 font-semibold tabular-nums">÷{size.divisor}</span>
+            {size.label}
+          </li>
+          {staleness && (
+            <li className="text-sm text-orange-700 dark:text-orange-400">
+              <span className="inline-block w-9 font-semibold tabular-nums">
+                ×{staleness.multiplier}
+              </span>
+              {staleness.label}
+            </li>
+          )}
         </ul>
       )}
 

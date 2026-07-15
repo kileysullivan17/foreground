@@ -1,22 +1,26 @@
 import type { Item } from '../types'
 
-// Transparent priority score. Every point an item earns is attributable to a
-// named factor with a plain-language label, and the UI shows all of them.
+// WSJF-adapted priority score. See FRAMEWORK.md for the model and the
+// rationale behind every weight; keep the two in sync.
 //
-// Factor budgets (max points):
+//   priority = cost of delay ÷ job size × staleness multiplier
+//
+// Cost of delay is additive and fully attributed (max points):
 //   deadline   35  — hard deadlines dominate when close or overdue
 //   importance 25  — 1..5 mapped linearly
 //   unblocks   20  — items other open work is waiting on
-//   staleness  15  — time since last touched; put-off work climbs
-//   effort     ±12 — only while the quick-wins toggle is on
-//   momentum    6  — small nudge to finish what's already started
+//   momentum    6  — restarting later costs context; finishing is cheap now
+//
+// Job size divides: S 1, M 2, L 3 (quick-wins mode steepens to 1 / 3 / 6).
+// Staleness multiplies: quiet for 3 days, then 1 + days/60, capped at 1.5.
+// Every component the UI shows carries a plain-language label.
 
 const DAY = 86_400_000
 
-export type FactorKey = 'deadline' | 'importance' | 'unblocks' | 'staleness' | 'effort' | 'momentum'
+export type DelayFactorKey = 'deadline' | 'importance' | 'unblocks' | 'momentum'
 
 export interface ScoreFactor {
-  key: FactorKey
+  key: DelayFactorKey
   points: number
   label: string
 }
@@ -24,7 +28,13 @@ export interface ScoreFactor {
 export interface ScoredItem {
   item: Item
   score: number
-  factors: ScoreFactor[]
+  costOfDelay: number
+  /** Additive cost-of-delay components, each with points and a label. */
+  delayFactors: ScoreFactor[]
+  /** The job-size divisor applied to cost of delay. */
+  size: { divisor: number; label: string }
+  /** Staleness multiplier; null while the item was touched recently. */
+  staleness: { multiplier: number; label: string } | null
   /** Unfinished items this one depends on. Non-empty = not actionable yet. */
   blockedBy: Item[]
 }
@@ -75,26 +85,36 @@ function unblocksFactor(openDependents: Item[]): ScoreFactor | null {
   }
 }
 
-function stalenessFactor(item: Item, now: Date): ScoreFactor | null {
-  const days = daysSinceTouched(item, now)
-  if (days < 4) return null // recently touched: no boost, no label noise
-  return {
-    key: 'staleness',
-    points: Math.min(15, Math.round(days / 2)),
-    label: `Untouched for ${days} days`,
-  }
-}
-
-function effortFactor(item: Item, quickWins: boolean): ScoreFactor | null {
-  if (!quickWins) return null
-  if (item.effort === 'S') return { key: 'effort', points: 12, label: 'Small job — good for right now' }
-  if (item.effort === 'L') return { key: 'effort', points: -12, label: 'Big job — not a low-energy pick' }
-  return null
-}
-
 function momentumFactor(item: Item): ScoreFactor | null {
   if (item.status !== 'in_progress') return null
-  return { key: 'momentum', points: 6, label: 'Already started — finish it' }
+  return { key: 'momentum', points: 6, label: 'Already started, finish it' }
+}
+
+const SIZE_DIVISOR = { S: 1, M: 2, L: 3 } as const
+const QUICK_WINS_DIVISOR = { S: 1, M: 3, L: 6 } as const
+
+function sizeComponent(item: Item, quickWins: boolean): { divisor: number; label: string } {
+  const divisor = (quickWins ? QUICK_WINS_DIVISOR : SIZE_DIVISOR)[item.effort]
+  const base = { S: 'Small job', M: 'Medium job', L: 'Big job' }[item.effort]
+  const label = !quickWins
+    ? base
+    : item.effort === 'S'
+      ? `${base}, good for right now`
+      : `${base}, wrong time for it`
+  return { divisor, label }
+}
+
+const STALENESS_GRACE_DAYS = 3
+const STALENESS_CAP = 1.5
+
+function stalenessComponent(
+  item: Item,
+  now: Date,
+): { multiplier: number; label: string } | null {
+  const days = daysSinceTouched(item, now)
+  if (days <= STALENESS_GRACE_DAYS) return null // recently touched: no boost, no label noise
+  const multiplier = Math.round(Math.min(STALENESS_CAP, 1 + days / 60) * 100) / 100
+  return { multiplier, label: `Untouched for ${days} days` }
 }
 
 export function scoreItem(item: Item, allItems: Item[], opts: ScoreOptions = {}): ScoredItem {
@@ -112,21 +132,21 @@ export function scoreItem(item: Item, allItems: Item[], opts: ScoreOptions = {})
       other.dependsOn.includes(item.id),
   )
 
-  const factors = [
+  const delayFactors = [
     deadlineFactor(item, now),
     importanceFactor(item),
     unblocksFactor(openDependents),
-    stalenessFactor(item, now),
-    effortFactor(item, opts.quickWins ?? false),
     momentumFactor(item),
   ].filter((f): f is ScoreFactor => f !== null)
 
-  return {
-    item,
-    score: factors.reduce((sum, f) => sum + f.points, 0),
-    factors,
-    blockedBy,
-  }
+  const costOfDelay = delayFactors.reduce((sum, f) => sum + f.points, 0)
+  const size = sizeComponent(item, opts.quickWins ?? false)
+  const staleness = stalenessComponent(item, now)
+
+  const score =
+    Math.round((costOfDelay / size.divisor) * (staleness?.multiplier ?? 1) * 10) / 10
+
+  return { item, score, costOfDelay, delayFactors, size, staleness, blockedBy }
 }
 
 /**

@@ -134,6 +134,32 @@ Judgment calls made during the build, and why. Newest last.
     shape as the item scorer's cost of delay, so FRAMEWORK.md documents one
     model at two zoom levels.
 
+## v2: scoring rework
+
+29. **Cost-of-delay budgets carry over from v1 unchanged** (deadline 35 >
+    importance 25 > unblocks 20 > momentum 6). The v1 rationale still
+    holds and continuity means v1 users can read v2 cards. What changed is
+    the arithmetic around them.
+30. **Job size divides (S 1, M 2, L 3) instead of not counting.** This is
+    the WSJF core the brief asked for. Honest consequence, documented in
+    FRAMEWORK.md: a large near-deadline item can now rank below a small
+    stale one. Deadline dominance is preserved within a size class (pinned
+    by tests) rather than globally, and that is a defensible reading of
+    what WSJF is for.
+31. **Staleness became a multiplier (1 + days/60, 3-day grace, cap 1.5),
+    was additive 0..15.** Additive staleness manufactures value from age;
+    a multiplier amplifies value that is already there. Keeps staleness
+    first-class (it is the differentiator) while fixing its worst failure
+    mode, a trivial item leapfrogging critical work purely by being
+    ignored.
+32. **Quick wins is now steeper divisors (1/3/6), was a ±12 addend.** Same
+    intent, expressed inside the framework instead of alongside it. Both
+    directions still label themselves on the card.
+33. **Momentum stays, filed under cost of delay.** Restart cost is a real
+    delay cost. Still 6 points, still deliberately tie-break sized.
+34. **Scores show one decimal now.** Division makes integer collisions
+    common and the decimal keeps adjacent ranks explainable.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

@@ -36,7 +36,7 @@ function makeItem(overrides: Partial<Item> = {}): Item {
   }
 }
 
-describe('deadline factor', () => {
+describe('cost of delay: deadline', () => {
   it('scores closer deadlines higher', () => {
     const soon = scoreItem(makeItem({ hardDeadline: date(2) }), [], { now: NOW })
     const far = scoreItem(makeItem({ hardDeadline: date(25) }), [], { now: NOW })
@@ -47,7 +47,7 @@ describe('deadline factor', () => {
 
   it('marks overdue items with the max deadline points and says so', () => {
     const overdue = scoreItem(makeItem({ hardDeadline: date(-3) }), [], { now: NOW })
-    const deadline = overdue.factors.find((f) => f.key === 'deadline')
+    const deadline = overdue.delayFactors.find((f) => f.key === 'deadline')
     expect(deadline?.points).toBe(35)
     expect(deadline?.label).toBe('Overdue by 3 days')
   })
@@ -59,25 +59,64 @@ describe('deadline factor', () => {
   })
 })
 
-describe('staleness factor', () => {
+describe('job size divides (the WSJF core)', () => {
+  it('prefers the smaller of two otherwise-identical items', () => {
+    const small = makeItem({ effort: 'S', importance: 4 })
+    const large = makeItem({ effort: 'L', importance: 4 })
+    const { ready } = rankItems([small, large], { now: NOW })
+    expect(ready[0]?.item.id).toBe(small.id)
+    expect(ready[0]!.size.divisor).toBe(1)
+    expect(ready[1]!.size.divisor).toBe(3)
+    expect(ready[0]!.costOfDelay).toBe(ready[1]!.costOfDelay)
+  })
+
+  it('exposes the divisor and a plain label on every scored item', () => {
+    const medium = scoreItem(makeItem({ effort: 'M' }), [], { now: NOW })
+    expect(medium.size).toEqual({ divisor: 2, label: 'Medium job' })
+    expect(medium.score).toBe(medium.costOfDelay / 2)
+  })
+})
+
+describe('staleness multiplier', () => {
   it('makes an untouched item outrank an identical fresh one', () => {
     const fresh = makeItem({ lastTouchedAt: iso(-1) })
     const stale = makeItem({ lastTouchedAt: iso(-28) })
     const { ready } = rankItems([fresh, stale], { now: NOW })
     expect(ready[0]?.item.id).toBe(stale.id)
-    expect(ready[0]?.factors.find((f) => f.key === 'staleness')?.label).toBe(
-      'Untouched for 28 days',
-    )
+    expect(ready[0]?.staleness?.label).toBe('Untouched for 28 days')
   })
 
-  it('caps staleness so it cannot outweigh a near deadline', () => {
+  it('caps at x1.5 so age amplifies value instead of replacing it', () => {
     const ancient = scoreItem(makeItem({ lastTouchedAt: iso(-200) }), [], { now: NOW })
-    expect(ancient.factors.find((f) => f.key === 'staleness')?.points).toBe(15)
+    expect(ancient.staleness?.multiplier).toBe(1.5)
+  })
+
+  it('cannot lift a same-size trivial item over near-deadline work', () => {
+    const dueTomorrow = makeItem({ hardDeadline: date(1), importance: 4 })
+    const staleTrivial = makeItem({ importance: 2, lastTouchedAt: iso(-90) })
+    const { ready } = rankItems([dueTomorrow, staleTrivial], { now: NOW })
+    expect(ready[0]?.item.id).toBe(dueTomorrow.id)
   })
 
   it('stays quiet for recently touched items', () => {
     const fresh = scoreItem(makeItem({ lastTouchedAt: iso(-1) }), [], { now: NOW })
-    expect(fresh.factors.find((f) => f.key === 'staleness')).toBeUndefined()
+    expect(fresh.staleness).toBeNull()
+  })
+
+  it('multiplies rather than adds: boosts scale with what is at stake', () => {
+    const staleImportant = scoreItem(
+      makeItem({ importance: 5, lastTouchedAt: iso(-30) }),
+      [],
+      { now: NOW },
+    )
+    const staleTrivial = scoreItem(
+      makeItem({ importance: 1, lastTouchedAt: iso(-30) }),
+      [],
+      { now: NOW },
+    )
+    const importantGain = staleImportant.score - staleImportant.costOfDelay / 2
+    const trivialGain = staleTrivial.score - staleTrivial.costOfDelay / 2
+    expect(importantGain).toBeGreaterThan(trivialGain)
   })
 })
 
@@ -87,7 +126,7 @@ describe('dependency handling', () => {
     const dependent = makeItem({ dependsOn: [blocker.id] })
     const all = [blocker, dependent]
     const scored = scoreItem(blocker, all, { now: NOW })
-    const unblocks = scored.factors.find((f) => f.key === 'unblocks')
+    const unblocks = scored.delayFactors.find((f) => f.key === 'unblocks')
     expect(unblocks?.points).toBe(8)
     expect(unblocks?.label).toContain('Holding up')
   })
@@ -96,7 +135,7 @@ describe('dependency handling', () => {
     const blocker = makeItem()
     const doneDependent = makeItem({ dependsOn: [blocker.id], status: 'done' })
     const scored = scoreItem(blocker, [blocker, doneDependent], { now: NOW })
-    expect(scored.factors.find((f) => f.key === 'unblocks')).toBeUndefined()
+    expect(scored.delayFactors.find((f) => f.key === 'unblocks')).toBeUndefined()
   })
 
   it('separates blocked items out of the ready ranking', () => {
@@ -117,18 +156,23 @@ describe('dependency handling', () => {
 })
 
 describe('quick wins toggle', () => {
-  it('lifts small jobs over large ones when on', () => {
+  it('steepens the size divisor so big jobs sink', () => {
+    // Big enough cost of delay that the large item wins under normal
+    // divisors; quick-wins mode must still sink it below the small one.
     const small = makeItem({ effort: 'S' })
-    const large = makeItem({ effort: 'L', importance: 4 })
+    const large = makeItem({ effort: 'L', importance: 5, hardDeadline: date(3) })
     const off = rankItems([small, large], { now: NOW })
     const on = rankItems([small, large], { now: NOW, quickWins: true })
     expect(off.ready[0]?.item.id).toBe(large.id)
     expect(on.ready[0]?.item.id).toBe(small.id)
+    expect(on.ready.find((s) => s.item.id === large.id)?.size.divisor).toBe(6)
   })
 
-  it('adds no effort factor when off', () => {
-    const small = scoreItem(makeItem({ effort: 'S' }), [], { now: NOW })
-    expect(small.factors.find((f) => f.key === 'effort')).toBeUndefined()
+  it('labels the effort fit in both directions when on', () => {
+    const small = scoreItem(makeItem({ effort: 'S' }), [], { now: NOW, quickWins: true })
+    const large = scoreItem(makeItem({ effort: 'L' }), [], { now: NOW, quickWins: true })
+    expect(small.size.label).toBe('Small job, good for right now')
+    expect(large.size.label).toBe('Big job, wrong time for it')
   })
 })
 
@@ -141,9 +185,10 @@ describe('ranking basics', () => {
     expect([...ready, ...blocked].map((s) => s.item.id)).toEqual([open.id])
   })
 
-  it('gives in-progress items a momentum nudge', () => {
+  it('counts momentum into cost of delay for in-progress items', () => {
     const started = scoreItem(makeItem({ status: 'in_progress' }), [], { now: NOW })
-    expect(started.factors.find((f) => f.key === 'momentum')?.points).toBe(6)
+    expect(started.delayFactors.find((f) => f.key === 'momentum')?.points).toBe(6)
+    expect(started.costOfDelay).toBe(13 + 6)
   })
 
   it('re-ranks when fields change (same function, new data)', () => {
@@ -154,6 +199,21 @@ describe('ranking basics', () => {
     expect(before.ready[0]?.score).toBe(before.ready[1]?.score)
     expect(after.ready[0]?.item.id).toBe(a.id)
     expect(after.ready[0]?.score).toBeGreaterThan(after.ready[1]?.score ?? 0)
+  })
+
+  it('sums delay factors into costOfDelay and applies the formula', () => {
+    const item = makeItem({
+      effort: 'L',
+      importance: 5,
+      hardDeadline: date(10),
+      lastTouchedAt: iso(-12),
+    })
+    const scored = scoreItem(item, [], { now: NOW })
+    const summed = scored.delayFactors.reduce((s, f) => s + f.points, 0)
+    expect(scored.costOfDelay).toBe(summed)
+    expect(scored.score).toBe(
+      Math.round((summed / 3) * scored.staleness!.multiplier * 10) / 10,
+    )
   })
 })
 
