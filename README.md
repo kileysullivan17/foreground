@@ -1,6 +1,6 @@
-# Planner
+# Foreground
 
-A personal prioritization planner: one place for every open project and task
+Foreground is a personal prioritization tool: one place for every open project and task
 across work and home, built to answer a single question on demand — **what
 should I work on right now?** Surfacing stale, avoided work is a first-class
 feature: put-off items climb the ranking instead of sinking.

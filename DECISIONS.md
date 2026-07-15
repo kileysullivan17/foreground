@@ -94,6 +94,19 @@ Judgment calls made during the build, and why. Newest last.
     Fixed by replacing objects immutably (see comment in
     `src/data/local.ts`).
 
+## v2: naming and environment
+
+22. **Renamed to Foreground.** The brief ranked three names and said pick
+    the first unless pushed back; no pushback, so Foreground it is. Applied
+    to package metadata, the page title, a small wordmark header on every
+    screen, and a new favicon (a vivid circle in front of a faded one — the
+    name as a picture). The localStorage key stays `planner-db-v1` so
+    existing users keep their data; renaming a storage key buys nothing.
+23. **Real git from v2 on.** The Xcode CLT breakage that forced
+    isomorphic-git in v1 has been fixed (system git 2.50.1 works).
+    `scripts/git.mjs` stays in the repo as history but v2 commits use plain
+    git.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

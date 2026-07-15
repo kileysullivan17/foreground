@@ -23,6 +23,13 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-dvh bg-zinc-50 pb-24 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
         <ScrollToTop />
+        <header className="mx-auto flex max-w-lg items-center gap-1.5 px-4 pt-3">
+          <svg viewBox="0 0 48 48" className="h-4 w-4" aria-hidden>
+            <circle cx="31" cy="18" r="9" className="fill-zinc-300 dark:fill-zinc-700" />
+            <circle cx="21" cy="27" r="12" className="fill-indigo-500" />
+          </svg>
+          <span className="text-sm font-semibold tracking-tight">Foreground</span>
+        </header>
         <Routes>
           <Route path="/" element={<WhatNow />} />
           <Route path="/put-off" element={<PutOff />} />

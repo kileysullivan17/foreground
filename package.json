@@ -1,7 +1,8 @@
 {
-  "name": "planner",
+  "name": "foreground",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
+  "description": "Foreground: a personal prioritization tool that decides what belongs in the foreground of your attention.",
   "type": "module",
   "scripts": {
     "dev": "vite",
