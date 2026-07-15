@@ -1,6 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { db } from '../data'
-import type { ItemPatch, NewItem, NewProject, ProjectPatch, Status } from '../types'
+import type {
+  ItemPatch,
+  NewItem,
+  NewProject,
+  NewStory,
+  ProjectPatch,
+  Status,
+  StoryPatch,
+} from '../types'
 
 export function useItems() {
   return useQuery({ queryKey: ['items'], queryFn: () => db.listItems() })
@@ -46,6 +54,26 @@ export function useTouchItem() {
   return useMutation({
     mutationFn: ({ id, note }: { id: string; note: string }) => db.touchItem(id, note),
     onSuccess: invalidate,
+  })
+}
+
+export function useStories() {
+  return useQuery({ queryKey: ['stories'], queryFn: () => db.listStories() })
+}
+
+export function useCreateStory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: NewStory) => db.createStory(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['stories'] }),
+  })
+}
+
+export function useUpdateStory() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: StoryPatch }) => db.updateStory(id, patch),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['stories'] }),
   })
 }
 

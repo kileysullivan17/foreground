@@ -1,5 +1,20 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import type { Area, Effort, Item, ItemPatch, NewItem, NewProject, Project, ProjectPatch, Status } from '../types'
+import type {
+  AcceptanceCriterion,
+  Area,
+  Effort,
+  Item,
+  ItemPatch,
+  NewItem,
+  NewProject,
+  NewStory,
+  Project,
+  ProjectPatch,
+  Status,
+  Story,
+  StoryPatch,
+  StoryStatus,
+} from '../types'
 import type { DataProvider } from './provider'
 
 // Row shapes match supabase/migrations/0001_init.sql (snake_case).
@@ -28,6 +43,50 @@ interface ItemRow {
   created_at: string
   last_touched_at: string
   last_touch_note: string | null
+}
+
+interface StoryRow {
+  id: string
+  title: string
+  description: string
+  acceptance_criteria: AcceptanceCriterion[]
+  business_value: number
+  time_criticality: number
+  enablement: number
+  job_size: number
+  status: StoryStatus
+  raw: boolean
+  created_at: string
+}
+
+function storyFromRow(r: StoryRow): Story {
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    acceptanceCriteria: r.acceptance_criteria,
+    businessValue: r.business_value,
+    timeCriticality: r.time_criticality,
+    enablement: r.enablement,
+    jobSize: r.job_size,
+    status: r.status,
+    raw: r.raw,
+    createdAt: r.created_at,
+  }
+}
+
+function storyToRow(patch: StoryPatch): Partial<StoryRow> {
+  const row: Partial<StoryRow> = {}
+  if (patch.title !== undefined) row.title = patch.title
+  if (patch.description !== undefined) row.description = patch.description
+  if (patch.acceptanceCriteria !== undefined) row.acceptance_criteria = patch.acceptanceCriteria
+  if (patch.businessValue !== undefined) row.business_value = patch.businessValue
+  if (patch.timeCriticality !== undefined) row.time_criticality = patch.timeCriticality
+  if (patch.enablement !== undefined) row.enablement = patch.enablement
+  if (patch.jobSize !== undefined) row.job_size = patch.jobSize
+  if (patch.status !== undefined) row.status = patch.status
+  if (patch.raw !== undefined) row.raw = patch.raw
+  return row
 }
 
 function projectFromRow(r: ProjectRow): Project {
@@ -152,5 +211,32 @@ export class SupabaseProvider implements DataProvider {
       lastTouchedAt: new Date().toISOString(),
       lastTouchNote: note,
     })
+  }
+
+  async listStories(): Promise<Story[]> {
+    const { data, error } = await this.client.from('stories').select('*').order('created_at')
+    if (error) throw error
+    return (data as StoryRow[]).map(storyFromRow)
+  }
+
+  async createStory(input: NewStory): Promise<Story> {
+    const { data, error } = await this.client
+      .from('stories')
+      .insert(storyToRow(input))
+      .select()
+      .single()
+    if (error) throw error
+    return storyFromRow(data as StoryRow)
+  }
+
+  async updateStory(id: string, patch: StoryPatch): Promise<Story> {
+    const { data, error } = await this.client
+      .from('stories')
+      .update(storyToRow(patch))
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return storyFromRow(data as StoryRow)
   }
 }

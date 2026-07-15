@@ -1,19 +1,36 @@
-import type { Item, ItemPatch, NewItem, NewProject, Project, ProjectPatch } from '../types'
+import type {
+  Item,
+  ItemPatch,
+  NewItem,
+  NewProject,
+  NewStory,
+  Project,
+  ProjectPatch,
+  Story,
+  StoryPatch,
+} from '../types'
 import type { DataProvider } from './provider'
-import { buildSeed } from './seed'
+import { buildSeed, buildStorySeed } from './seed'
 
 const STORE_KEY = 'planner-db-v1'
 
 interface Store {
   projects: Project[]
   items: Item[]
+  stories: Story[]
 }
 
 function load(): Store {
   const rawStore = localStorage.getItem(STORE_KEY)
   if (rawStore) {
     try {
-      return JSON.parse(rawStore) as Store
+      const store = JSON.parse(rawStore) as Store
+      // v1 stores predate the Product module: seed stories in, keep the rest.
+      if (!Array.isArray(store.stories)) {
+        store.stories = buildStorySeed()
+        localStorage.setItem(STORE_KEY, JSON.stringify(store))
+      }
+      return store
     } catch {
       // corrupted store: fall through and reseed
     }
@@ -95,5 +112,31 @@ export class LocalProvider implements DataProvider {
       lastTouchedAt: new Date().toISOString(),
       lastTouchNote: note,
     })
+  }
+
+  async listStories(): Promise<Story[]> {
+    return [...this.store.stories]
+  }
+
+  async createStory(input: NewStory): Promise<Story> {
+    const story: Story = {
+      ...input,
+      id: newId('story'),
+      createdAt: new Date().toISOString(),
+    }
+    this.store.stories.push(story)
+    save(this.store)
+    return story
+  }
+
+  async updateStory(id: string, patch: StoryPatch): Promise<Story> {
+    // Same immutability rule as updateItem: replace, never mutate in place.
+    const idx = this.store.stories.findIndex((s) => s.id === id)
+    const existing = this.store.stories[idx]
+    if (!existing) throw new Error(`story not found: ${id}`)
+    const updated = { ...existing, ...patch }
+    this.store.stories[idx] = updated
+    save(this.store)
+    return updated
   }
 }

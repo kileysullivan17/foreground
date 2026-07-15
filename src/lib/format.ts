@@ -22,3 +22,11 @@ export const statusLabels = {
   done: 'Done',
   parked: 'Parked',
 } as const
+
+export const storyStatusLabels = {
+  backlog: 'Backlog',
+  groomed: 'Groomed',
+  in_progress: 'In progress',
+  done: 'Done',
+  later: 'Later',
+} as const

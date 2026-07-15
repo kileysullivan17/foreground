@@ -99,13 +99,40 @@ Judgment calls made during the build, and why. Newest last.
 22. **Renamed to Foreground.** The brief ranked three names and said pick
     the first unless pushed back; no pushback, so Foreground it is. Applied
     to package metadata, the page title, a small wordmark header on every
-    screen, and a new favicon (a vivid circle in front of a faded one — the
+    screen, and a new favicon (a vivid circle in front of a faded one: the
     name as a picture). The localStorage key stays `planner-db-v1` so
     existing users keep their data; renaming a storage key buys nothing.
 23. **Real git from v2 on.** The Xcode CLT breakage that forced
     isomorphic-git in v1 has been fixed (system git 2.50.1 works).
     `scripts/git.mjs` stays in the repo as history but v2 commits use plain
     git.
+
+## v2: Product module
+
+24. **Tap-to-move, not drag-and-drop.** The brief allowed either. Drag on a
+    phone needs a gesture library, fights scroll on a horizontally snapping
+    board, and hides the affordance; tap a card, tap a column name is
+    discoverable and testable with zero dependencies. Reversible if a
+    desktop-heavy audience materializes.
+25. **'Later' is a status with a shelf, not a fifth column.** The brief asks
+    for a Backlog / Groomed / In Progress / Done board plus a Later set of
+    v3 items. A fifth swipe column would put speculative work on equal
+    visual footing with committed work; a collapsed shelf below the board
+    keeps the pipeline honest.
+26. **The morning check-in ships as a groomed story, not a feature.** The
+    brief embeds it (verbatim, with acceptance criteria) under "seed it
+    honestly", and the definition of done doesn't list it as a build
+    requirement. Reading it as seed content keeps the backlog truthful:
+    it is real planned work, groomed and unbuilt.
+27. **`raw` is an explicit flag on stories.** Raw captures could be
+    inferred (empty criteria), but grooming needs a crisp target for
+    "show the groom action" and the inference breaks the moment someone
+    writes criteria by hand on an ungroomed capture.
+28. **Story scores are three 1..5 sliders plus fibonacci-ish size.**
+    Value, urgency, and enablement mirror WSJF's cost-of-delay components
+    at backlog granularity; size is story points in {1, 2, 3, 5, 8}. Same
+    shape as the item scorer's cost of delay, so FRAMEWORK.md documents one
+    model at two zoom levels.
 
 ## Cut from v1 (deliberately)
 

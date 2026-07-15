@@ -1,5 +1,14 @@
 import raw from './seed-data.json'
-import type { Area, Effort, Item, Project, Status } from '../types'
+import type {
+  AcceptanceCriterion,
+  Area,
+  Effort,
+  Item,
+  Project,
+  Status,
+  Story,
+  StoryStatus,
+} from '../types'
 
 const DAY = 86_400_000
 
@@ -37,7 +46,37 @@ interface SeedItem {
   lastTouchNote?: string
 }
 
-export function buildSeed(): { projects: Project[]; items: Item[] } {
+interface SeedStory {
+  key: string
+  title: string
+  description: string
+  acceptanceCriteria: AcceptanceCriterion[]
+  businessValue: number
+  timeCriticality: number
+  enablement: number
+  jobSize: number
+  status: string
+  raw: boolean
+  createdDaysAgo: number
+}
+
+export function buildStorySeed(): Story[] {
+  return (raw.stories as SeedStory[]).map((s) => ({
+    id: s.key,
+    title: s.title,
+    description: s.description,
+    acceptanceCriteria: s.acceptanceCriteria,
+    businessValue: s.businessValue,
+    timeCriticality: s.timeCriticality,
+    enablement: s.enablement,
+    jobSize: s.jobSize,
+    status: s.status as StoryStatus,
+    raw: s.raw,
+    createdAt: daysAgo(s.createdDaysAgo),
+  }))
+}
+
+export function buildSeed(): { projects: Project[]; items: Item[]; stories: Story[] } {
   const projects = (raw.projects as SeedProject[]).map((p) => ({
     id: p.key,
     name: p.name,
@@ -65,5 +104,5 @@ export function buildSeed(): { projects: Project[]; items: Item[] } {
     lastTouchNote: i.lastTouchNote ?? null,
   }))
 
-  return { projects, items }
+  return { projects, items, stories: buildStorySeed() }
 }

@@ -4,11 +4,13 @@ import { WhatNow } from './screens/WhatNow'
 import { PutOff } from './screens/PutOff'
 import { Projects } from './screens/Projects'
 import { AddItem } from './screens/AddItem'
+import { Product } from './screens/Product'
 
 const tabs = [
   { to: '/', label: 'Now', symbol: '◎' },
   { to: '/put-off', label: 'Put off', symbol: '🕰' },
   { to: '/projects', label: 'Projects', symbol: '▤' },
+  { to: '/product', label: 'Product', symbol: '▦' },
   { to: '/add', label: 'Add', symbol: '＋' },
 ]
 
@@ -34,11 +36,12 @@ export default function App() {
           <Route path="/" element={<WhatNow />} />
           <Route path="/put-off" element={<PutOff />} />
           <Route path="/projects" element={<Projects />} />
+          <Route path="/product" element={<Product />} />
           <Route path="/add" element={<AddItem />} />
         </Routes>
 
         <nav className="fixed inset-x-0 bottom-0 border-t border-zinc-200 bg-white/95 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95">
-          <div className="mx-auto grid max-w-lg grid-cols-4">
+          <div className="mx-auto grid max-w-lg grid-cols-5">
             {tabs.map((tab) => (
               <NavLink
                 key={tab.to}

@@ -44,5 +44,182 @@
     { "key": "itm-tracker-demo", "title": "Demo the tracker prototype to ops", "notes": "", "area": "work", "projectKey": "proj-tracker", "section": "Backlog", "assignee": "Me", "effort": "M", "importance": 3, "deadlineInDays": 30, "dependsOnKeys": ["itm-tracker-schema"], "createdDaysAgo": 28, "touchedDaysAgo": 28 },
 
     { "key": "itm-inbox-zero", "title": "Clear the ops shared inbox backlog", "notes": "Twenty minutes of triage, mostly archiving.", "area": "work", "projectKey": null, "effort": "S", "importance": 2, "createdDaysAgo": 9, "touchedDaysAgo": 9 }
+  ],
+
+  "storiesComment": "The Product module backlog: this app's real v2 roadmap, seeded honestly. Done stories are the features built in the v2 run; groomed stories are next up; raw captures demo the grooming assistant; 'later' is the v3 shelf.",
+  "stories": [
+    {
+      "key": "story-product-module",
+      "title": "As a portfolio reviewer, I want the app's own roadmap visible as a groomed backlog on a kanban board so that the product practice is inspectable instead of claimed.",
+      "description": "The Product tab holds user stories with acceptance criteria, effort estimates, and WSJF scores on a Backlog / Groomed / In progress / Done board. The app manages its own development from day one.",
+      "acceptanceCriteria": [
+        { "text": "Stories carry title, description, acceptance criteria, job size, WSJF score, and status", "done": true },
+        { "text": "Board shows Backlog, Groomed, In progress, and Done columns with tap-to-move", "done": true },
+        { "text": "A Later shelf holds v3 candidates without crowding the board", "done": true },
+        { "text": "Ships seeded with the real v2 backlog, not filler", "done": true }
+      ],
+      "businessValue": 5, "timeCriticality": 3, "enablement": 4, "jobSize": 5,
+      "status": "done", "raw": false, "createdDaysAgo": 1
+    },
+    {
+      "key": "story-wsjf-scoring",
+      "title": "As a daily user, I want every ranked item to explain its score in named framework factors so that I can trust the ordering or fix the inputs.",
+      "description": "Replace the v1 ad hoc points with a WSJF adaptation: cost of delay (deadline urgency, importance, unblock value) divided by job size, with a staleness multiplier that boosts long-untouched work. Staleness stays first-class; it is this product's differentiator.",
+      "acceptanceCriteria": [
+        { "text": "Score = cost of delay divided by job size, times a staleness multiplier", "done": true },
+        { "text": "Every card lists each factor with its points in plain language", "done": true },
+        { "text": "FRAMEWORK.md documents the model, the weights, and the rationale", "done": true },
+        { "text": "Unit tests cover deadline, staleness, and blocking boundaries", "done": true }
+      ],
+      "businessValue": 5, "timeCriticality": 4, "enablement": 3, "jobSize": 3,
+      "status": "done", "raw": false, "createdDaysAgo": 1
+    },
+    {
+      "key": "story-dependency-view",
+      "title": "As a daily user, I want to see what an item blocks and what blocks it so that I can pick the work that unblocks the most.",
+      "description": "A per-item dependency view rendered as a nested list, both directions. Blocked items stay out of the ready ranking; items that unblock open work get a boost that names what they free up.",
+      "acceptanceCriteria": [
+        { "text": "Item detail shows blocked-by and blocks as nested lists", "done": true },
+        { "text": "Blocked items never top the ready list", "done": true },
+        { "text": "The unblock factor names the work it would free up", "done": true },
+        { "text": "Readable at 390px with no graph rendering", "done": true }
+      ],
+      "businessValue": 4, "timeCriticality": 2, "enablement": 4, "jobSize": 2,
+      "status": "done", "raw": false, "createdDaysAgo": 1
+    },
+    {
+      "key": "story-groom-assistant",
+      "title": "As a backlog owner, I want a groom-this action that drafts a raw capture into a user story with proposed criteria and a proposed score so that grooming takes a minute and stays under my control.",
+      "description": "Raw captures get a drafted story: title in story form, description, acceptance criteria, and suggested WSJF inputs. The draft is a proposal to accept or edit; nothing auto-applies. Calls Anthropic through a Vercel serverless proxy, stubbed behind an env flag until the key is wired in a supervised session.",
+      "acceptanceCriteria": [
+        { "text": "Groom this appears on raw captures only", "done": true },
+        { "text": "Proposal covers story title, description, criteria, and score inputs", "done": true },
+        { "text": "Nothing changes without an explicit accept", "done": true },
+        { "text": "Works end to end with the API stubbed; no key in the client or the repo", "done": true }
+      ],
+      "businessValue": 4, "timeCriticality": 2, "enablement": 3, "jobSize": 5,
+      "status": "done", "raw": false, "createdDaysAgo": 1
+    },
+    {
+      "key": "story-about-view",
+      "title": "As a portfolio reviewer, I want an About view explaining the product and how it was built so that the app doubles as its own case study.",
+      "description": "One screen: what Foreground is, the prioritization framework it uses, and the build approach. Written as case study copy, reachable from the wordmark header on every screen.",
+      "acceptanceCriteria": [
+        { "text": "Covers the product, the framework, and the build in one screen", "done": true },
+        { "text": "Reachable in one tap from anywhere in the app", "done": true },
+        { "text": "Every screen is screenshot-safe: placeholder data only", "done": true }
+      ],
+      "businessValue": 3, "timeCriticality": 2, "enablement": 1, "jobSize": 1,
+      "status": "done", "raw": false, "createdDaysAgo": 1
+    },
+    {
+      "key": "story-live-groom-api",
+      "title": "As the builder, I want the grooming proxy wired to the live Anthropic API in a supervised session so that drafts get model quality without a key ever entering the repo.",
+      "description": "The serverless function and UI are complete and stubbed. Remaining work is Vercel env configuration and a supervised smoke test.",
+      "acceptanceCriteria": [
+        { "text": "Key lives only in Vercel project env, never in the repo or the client", "done": false },
+        { "text": "Stub flips to live with an env change, no code edit", "done": false },
+        { "text": "API failure falls back to the stub with a visible notice", "done": false }
+      ],
+      "businessValue": 4, "timeCriticality": 3, "enablement": 2, "jobSize": 2,
+      "status": "groomed", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-morning-checkin",
+      "title": "As a daily user, I want a skippable sixty-second morning check-in showing my top three with one-tap status actions and a quick-capture for anything new, so that the day starts aligned without the app becoming a nag.",
+      "description": "One sheet on the first open of the day: the top three ranked items with Start / Done / Park, plus a single capture field. Skipping is a first-class outcome, not a failure state.",
+      "acceptanceCriteria": [
+        { "text": "Appears on first open of a calendar day only", "done": false },
+        { "text": "Dismiss requires one tap", "done": false },
+        { "text": "Completing or skipping both take under a minute", "done": false },
+        { "text": "No punishment mechanics for skipped days", "done": false }
+      ],
+      "businessValue": 4, "timeCriticality": 2, "enablement": 2, "jobSize": 3,
+      "status": "groomed", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-manual-tiebreak",
+      "title": "As a daily user, I want to hand-order items with equal scores so that ties reflect my judgment instead of creation date.",
+      "description": "Cut from v1. Only worth building if score ties turn out to be common in real use; revisit after a few weeks of dogfooding.",
+      "acceptanceCriteria": [
+        { "text": "Tied items expose a nudge-up and nudge-down control", "done": false },
+        { "text": "Manual order survives re-scoring while the tie holds", "done": false }
+      ],
+      "businessValue": 2, "timeCriticality": 1, "enablement": 1, "jobSize": 3,
+      "status": "backlog", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-raw-weekly-review",
+      "title": "Weekly review screen: what shipped, what stalled, what got parked",
+      "description": "",
+      "acceptanceCriteria": [],
+      "businessValue": 3, "timeCriticality": 3, "enablement": 3, "jobSize": 3,
+      "status": "backlog", "raw": true, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-raw-export",
+      "title": "Export the backlog as markdown for status updates",
+      "description": "",
+      "acceptanceCriteria": [],
+      "businessValue": 3, "timeCriticality": 3, "enablement": 3, "jobSize": 3,
+      "status": "backlog", "raw": true, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-auth-sync",
+      "title": "As a returning user, I want an account with sync so that Foreground follows me across devices.",
+      "description": "Supabase auth on the existing data layer. The v1 schema already carries RLS with a marked lockdown point.",
+      "acceptanceCriteria": [
+        { "text": "Sign in once per device; data follows the account", "done": false },
+        { "text": "RLS restricts every table to the owning user", "done": false },
+        { "text": "Existing local data migrates on first sign-in", "done": false }
+      ],
+      "businessValue": 3, "timeCriticality": 1, "enablement": 3, "jobSize": 8,
+      "status": "later", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-asana-import",
+      "title": "As a working PM, I want my Asana projects imported so that Foreground ranks my real workload instead of a copy.",
+      "description": "The item model has mirrored Asana task fields since v1 for exactly this. Import first; two-way sync is a separate, harder story.",
+      "acceptanceCriteria": [
+        { "text": "One-time import maps projects, tasks, sections, and due dates", "done": false },
+        { "text": "Re-import updates without duplicating", "done": false }
+      ],
+      "businessValue": 4, "timeCriticality": 1, "enablement": 2, "jobSize": 8,
+      "status": "later", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-touch-history",
+      "title": "As a daily user, I want the full trail of touch notes on an item so that I can reconstruct where a slow-moving thing stands.",
+      "description": "v1 keeps only the latest note by design. A history table is the clean later addition it was logged as.",
+      "acceptanceCriteria": [
+        { "text": "Every touch appends to a visible timeline on the item", "done": false },
+        { "text": "The latest note keeps its current placement in lists", "done": false }
+      ],
+      "businessValue": 2, "timeCriticality": 1, "enablement": 1, "jobSize": 3,
+      "status": "later", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-gentle-nudge",
+      "title": "As a daily user, I want one gentle daily notification when something is overdue or about to be so that I open the app at the right moment.",
+      "description": "A single digest-style nudge, never per-item pings. Pairs with the morning check-in.",
+      "acceptanceCriteria": [
+        { "text": "At most one notification per day, at a chosen time", "done": false },
+        { "text": "Fires only when something is overdue or due within 48 hours", "done": false },
+        { "text": "One tap disables it for good", "done": false }
+      ],
+      "businessValue": 3, "timeCriticality": 2, "enablement": 1, "jobSize": 5,
+      "status": "later", "raw": false, "createdDaysAgo": 0
+    },
+    {
+      "key": "story-pwa-offline",
+      "title": "As a phone user, I want Foreground installable and usable offline so that capture never waits for signal.",
+      "description": "PWA manifest plus a service worker over the existing local-first data layer.",
+      "acceptanceCriteria": [
+        { "text": "Installable from the browser with the Foreground icon", "done": false },
+        { "text": "Capture and ranking work with no connection", "done": false }
+      ],
+      "businessValue": 3, "timeCriticality": 1, "enablement": 2, "jobSize": 3,
+      "status": "later", "raw": false, "createdDaysAgo": 0
+    }
   ]
 }

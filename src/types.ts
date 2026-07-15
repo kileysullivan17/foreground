@@ -32,6 +32,33 @@ export interface Item {
   lastTouchNote: string | null
 }
 
+// The Product module: this app's own roadmap as a managed backlog.
+// 'later' is the v3 shelf; the four board columns are the other statuses.
+export type StoryStatus = 'backlog' | 'groomed' | 'in_progress' | 'done' | 'later'
+
+export interface AcceptanceCriterion {
+  text: string
+  done: boolean
+}
+
+export interface Story {
+  id: string
+  title: string // "As a [user], I want [capability] so that [outcome]"
+  description: string
+  acceptanceCriteria: AcceptanceCriterion[]
+  businessValue: number // 1..5 — value to the user or the portfolio
+  timeCriticality: number // 1..5 — cost of doing this later instead of now
+  enablement: number // 1..5 — how much other work this unblocks or de-risks
+  jobSize: number // story points: 1, 2, 3, 5, 8
+  status: StoryStatus
+  /** Captured raw, not yet groomed into story form. Grooming clears it. */
+  raw: boolean
+  createdAt: string // ISO timestamp
+}
+
+export type NewStory = Omit<Story, 'id' | 'createdAt'>
+export type StoryPatch = Partial<Omit<Story, 'id' | 'createdAt'>>
+
 export type NewItem = Omit<Item, 'id' | 'createdAt' | 'lastTouchedAt' | 'lastTouchNote'>
 export type NewProject = Omit<Project, 'id' | 'createdAt'>
 export type ItemPatch = Partial<Omit<Item, 'id' | 'createdAt'>>

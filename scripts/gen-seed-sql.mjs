@@ -41,5 +41,18 @@ for (const i of seed.items) {
     `${pastTs(i.createdDaysAgo)}, ${pastTs(i.touchedDaysAgo)}, ${q(i.lastTouchNote)});\n`
 }
 
+sql += '\n'
+
+for (const s of seed.stories) {
+  const ac = JSON.stringify(s.acceptanceCriteria)
+  sql +=
+    `insert into stories (id, title, description, acceptance_criteria, business_value, time_criticality, enablement, job_size, status, raw, created_at) values\n` +
+    `  (${q(uuidFor(s.key))}, ${q(s.title)}, ${q(s.description)}, ${q(ac)}::jsonb, ` +
+    `${s.businessValue}, ${s.timeCriticality}, ${s.enablement}, ${s.jobSize}, ` +
+    `${q(s.status)}, ${s.raw}, ${pastTs(s.createdDaysAgo)});\n`
+}
+
 fs.writeFileSync(path.join(root, 'supabase/seed.sql'), sql)
-console.log(`wrote supabase/seed.sql (${seed.projects.length} projects, ${seed.items.length} items)`)
+console.log(
+  `wrote supabase/seed.sql (${seed.projects.length} projects, ${seed.items.length} items, ${seed.stories.length} stories)`,
+)
