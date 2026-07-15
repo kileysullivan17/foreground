@@ -3,8 +3,9 @@ import { rankItems, type ScoredItem } from '../scoring/score'
 import { useItems, useProjects } from '../hooks/useData'
 import { Segmented } from '../components/Segmented'
 import { StatusActions } from '../components/StatusActions'
+import { DependencyView } from '../components/DependencyView'
 import { effortLabels } from '../lib/format'
-import type { Area, Project } from '../types'
+import type { Area, Item, Project } from '../types'
 
 type AreaFilter = 'all' | Area
 
@@ -17,7 +18,15 @@ const factorTone: Record<string, string> = {
   momentum: 'text-sky-700 dark:text-sky-400',
 }
 
-function ScoredCard({ scored, projects }: { scored: ScoredItem; projects: Project[] }) {
+function ScoredCard({
+  scored,
+  projects,
+  allItems,
+}: {
+  scored: ScoredItem
+  projects: Project[]
+  allItems: Item[]
+}) {
   const { item, score, delayFactors, size, staleness, blockedBy } = scored
   const project = projects.find((p) => p.id === item.projectId)
   const blocked = blockedBy.length > 0
@@ -47,24 +56,24 @@ function ScoredCard({ scored, projects }: { scored: ScoredItem; projects: Projec
       </div>
 
       {blocked ? (
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Waiting on {blockedBy.map((b) => `“${b.title}”`).join(', ')}
-        </p>
+        <div className="mt-2">
+          <DependencyView item={item} allItems={allItems} />
+        </div>
       ) : (
         <ul className="mt-2 space-y-0.5">
           {delayFactors.map((f) => (
             <li key={f.key} className={`text-sm ${factorTone[f.key] ?? ''}`}>
-              <span className="inline-block w-9 font-semibold tabular-nums">+{f.points}</span>
+              <span className="inline-block w-11 font-semibold tabular-nums">+{f.points}</span>
               {f.label}
             </li>
           ))}
           <li className="text-sm text-emerald-700 dark:text-emerald-400">
-            <span className="inline-block w-9 font-semibold tabular-nums">÷{size.divisor}</span>
+            <span className="inline-block w-11 font-semibold tabular-nums">÷{size.divisor}</span>
             {size.label}
           </li>
           {staleness && (
             <li className="text-sm text-orange-700 dark:text-orange-400">
-              <span className="inline-block w-9 font-semibold tabular-nums">
+              <span className="inline-block w-11 font-semibold tabular-nums">
                 ×{staleness.multiplier}
               </span>
               {staleness.label}
@@ -124,7 +133,7 @@ export function WhatNow() {
 
       <ul className="mt-4 space-y-3">
         {readyShown.map((s) => (
-          <ScoredCard key={s.item.id} scored={s} projects={projects} />
+          <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
         ))}
         {readyShown.length === 0 && (
           <p className="py-8 text-center text-zinc-500">Nothing workable here. Add something?</p>
@@ -143,7 +152,7 @@ export function WhatNow() {
           {showBlocked && (
             <ul className="mt-3 space-y-3">
               {blockedShown.map((s) => (
-                <ScoredCard key={s.item.id} scored={s} projects={projects} />
+                <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
               ))}
             </ul>
           )}

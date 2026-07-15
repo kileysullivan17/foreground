@@ -160,6 +160,22 @@ Judgment calls made during the build, and why. Newest last.
 34. **Scores show one decimal now.** Division makes integer collisions
     common and the decimal keeps adjacent ranks explainable.
 
+## v2: dependency view
+
+35. **Nested lists, both directions, following the chain.** "Waits on"
+    and "Would unblock" render transitively (a visited set guards the
+    recursion), so a blocked card shows the whole path to unblocking, not
+    just the first hop. Lives on blocked What-now cards and in the item
+    editor; the checkbox picker in the editor stays the edit surface and
+    got renamed to "Change what this waits on" so the two don't read as
+    duplicates. Score integration already existed (blocked items are
+    separated, unblockers get points) and is pinned by tests.
+36. **Found and fixed: render-phase mutation.** The first version mutated
+    the visited set while rendering; StrictMode's double render left it
+    pre-filled and silently hid every nested branch. The tree is now built
+    in a pure step first. Logged because it is exactly the class of bug
+    the verify-at-the-UI habit exists to catch.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

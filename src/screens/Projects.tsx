@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCreateItem, useCreateProject, useItems, useProjects, useUpdateItem, useUpdateProject } from '../hooks/useData'
 import { Segmented } from '../components/Segmented'
+import { DependencyView } from '../components/DependencyView'
 import { effortLabels, formatDate, statusLabels } from '../lib/format'
 import type { Area, Effort, Item, Project, Status } from '../types'
 
@@ -118,9 +119,10 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
           </select>
         </label>
       </div>
+      <DependencyView item={item} allItems={allItems} />
       {depCandidates.length > 0 && (
         <fieldset>
-          <legend className="text-sm font-medium">Waits on</legend>
+          <legend className="text-sm font-medium">Change what this waits on</legend>
           <div className="mt-1 max-h-36 space-y-1 overflow-y-auto">
             {depCandidates.map((c) => (
               <label key={c.id} className="flex items-center gap-2 text-sm">
