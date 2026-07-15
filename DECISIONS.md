@@ -176,6 +176,27 @@ Judgment calls made during the build, and why. Newest last.
     in a pure step first. Logged because it is exactly the class of bug
     the verify-at-the-UI habit exists to catch.
 
+## v2: grooming assistant
+
+37. **The proposal is just the editor, prefilled.** "Groom this" fetches a
+    draft and opens the normal story editor with it; Save is the accept,
+    Cancel discards. No parallel apply path to keep honest, and the
+    "nothing auto-applies" rule holds structurally instead of by
+    discipline. Accepting (or hand-writing criteria into a raw capture)
+    clears the raw flag and moves a backlog story to Groomed.
+38. **One stub, shared by both sides of the wire.** The deterministic
+    draft heuristic lives in `src/lib/groomDraft.ts` and is used by the
+    serverless function when `GROOM_LLM`/`ANTHROPIC_API_KEY` are unset and
+    by the client when no serverless runtime exists (Vite dev). Every
+    draft is labeled with its source in the UI, and API failure falls back
+    to the stub rather than erroring: the flow never dead-ends and never
+    pretends stub output came from the model.
+39. **Live path written but gated.** `api/groom.ts` carries the real
+    Anthropic call (claude-opus-4-8, structured JSON output against the
+    draft schema) behind two env vars set only in Vercel. No key is
+    requested, read, or stored in this run; the supervised session just
+    sets env and flips `GROOM_LLM=live`.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useCreateStory, useStories, useUpdateStory } from '../hooks/useData'
 import { compareStories, storyWsjf } from '../scoring/wsjf'
 import { storyStatusLabels } from '../lib/format'
+import { requestGroomDraft } from '../lib/groomClient'
+import type { GroomDraft } from '../lib/groomDraft'
 import type { Story, StoryStatus } from '../types'
 
 // The app's own roadmap as a managed backlog. Four board columns swipe
@@ -78,6 +80,10 @@ function StoryEditor({ story, onClose }: { story: Story; onClose: () => void }) 
       .split('\n')
       .map((t) => t.trim())
       .filter(Boolean)
+    // Saving criteria into a raw capture is grooming it, whether the words
+    // came from the assistant's draft or by hand: the raw flag clears and a
+    // backlog story moves to Groomed.
+    const becomesGroomed = story.raw && texts.length > 0
     update.mutate(
       {
         id: story.id,
@@ -93,7 +99,8 @@ function StoryEditor({ story, onClose }: { story: Story; onClose: () => void }) 
             text,
             done: story.acceptanceCriteria.find((c) => c.text === text)?.done ?? false,
           })),
-          raw: false,
+          raw: story.raw && !becomesGroomed,
+          ...(becomesGroomed && story.status === 'backlog' ? { status: 'groomed' as const } : {}),
         },
       },
       { onSuccess: onClose },
@@ -174,7 +181,31 @@ function StoryEditor({ story, onClose }: { story: Story; onClose: () => void }) 
 function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
   const update = useUpdateStory()
   const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState<GroomDraft | null>(null)
+  const [drafting, setDrafting] = useState(false)
   const wsjf = storyWsjf(story)
+
+  const groom = async () => {
+    setDrafting(true)
+    try {
+      setDraft(await requestGroomDraft(story.title))
+    } finally {
+      setDrafting(false)
+    }
+  }
+
+  // The draft is only a proposal: it lives in the editor, prefilled, and
+  // touches the story exclusively through an explicit Save.
+  const draftStory: Story | null = draft && {
+    ...story,
+    title: draft.title,
+    description: draft.description,
+    acceptanceCriteria: draft.acceptanceCriteria.map((text) => ({ text, done: false })),
+    businessValue: draft.businessValue,
+    timeCriticality: draft.timeCriticality,
+    enablement: draft.enablement,
+    jobSize: draft.jobSize,
+  }
 
   const toggleCriterion = (index: number) => {
     update.mutate({
@@ -210,7 +241,19 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
             </button>
           </div>
 
-          {editing ? (
+          {draft && draftStory ? (
+            <div className="mt-3">
+              <p className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-900 dark:bg-indigo-950 dark:text-indigo-200">
+                {draft.source === 'stub'
+                  ? 'Proposed draft from the local stub (the model call is not wired yet). '
+                  : 'Proposed draft from the model. '}
+                {draft.rationale} Nothing applies until you save.
+              </p>
+              <div className="mt-3">
+                <StoryEditor story={draftStory} onClose={() => setDraft(null)} />
+              </div>
+            </div>
+          ) : editing ? (
             <div className="mt-3">
               <StoryEditor story={story} onClose={() => setEditing(false)} />
             </div>
@@ -222,9 +265,17 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
               )}
 
               {story.raw ? (
-                <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                  Raw capture: not yet in story form, unscored.
-                </p>
+                <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                  <p>Raw capture: not yet in story form, unscored.</p>
+                  <button
+                    type="button"
+                    onClick={groom}
+                    disabled={drafting}
+                    className={`${smallBtn} mt-2 bg-indigo-600 text-white disabled:opacity-50`}
+                  >
+                    {drafting ? 'Drafting…' : 'Groom this'}
+                  </button>
+                </div>
               ) : (
                 <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
                   <span className="font-semibold text-indigo-700 dark:text-indigo-400">
