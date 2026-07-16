@@ -1,15 +1,21 @@
 # Foreground
 
-Foreground is a personal prioritization tool: one place for every open
-project and task across work and home, built to answer a single question on
-demand. What should I work on right now? Work you keep putting off climbs
-the ranking instead of sinking; that is the product's differentiator, and
-v2 makes the whole thing double as a product management showcase. The app
-manages its own development: its roadmap lives inside it as a groomed
-backlog.
+<!-- Screenshot: drop a real capture at docs/screenshot.png before publishing -->
+![Foreground, the What now screen](docs/screenshot.png)
 
-React 18 · TypeScript (strict) · Vite · Tailwind CSS v4 · React Hook Form +
-Zod · TanStack Query · Supabase-shaped data layer · Vercel-ready.
+Foreground is a personal prioritization tool that answers one question on
+demand: what should I work on right now? It treats the work you keep putting
+off as a signal to surface rather than noise to bury, so nothing important
+rots quietly at the bottom of a list.
+
+Product-managed in Claude, built autonomously by Claude Code, then
+independently audited with every finding remediated. Built with React 18,
+TypeScript (strict), Vite, Tailwind v4, TanStack Query, Zod, and a
+Supabase-shaped data layer.
+
+The scoring model and every weight in it are documented in
+[FRAMEWORK.md](FRAMEWORK.md); the judgment calls behind the build, each with
+its rationale, are in [DECISIONS.md](DECISIONS.md).
 
 ## The framework
 
