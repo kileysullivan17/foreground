@@ -1,17 +1,35 @@
 // Shared by the client (dev fallback) and api/groom.ts (stub mode), so the
 // grooming flow behaves identically wherever the LLM is unavailable.
 
-export interface GroomDraft {
-  title: string
-  description: string
-  acceptanceCriteria: string[]
-  businessValue: number
-  timeCriticality: number
-  enablement: number
-  jobSize: number
-  rationale: string
-  source: 'stub' | 'llm'
-}
+import { z } from 'zod'
+
+const scoreField = z.number().int().min(1).max(5)
+
+// The draft's content, without the source tag. Both wire ends validate the
+// model's JSON against this before trusting it; a miss means we fall back to
+// the stub rather than feeding a malformed draft into the editor.
+export const groomDraftContentSchema = z.object({
+  title: z.string().min(1),
+  description: z.string(),
+  acceptanceCriteria: z.array(z.string().min(1)).min(1),
+  businessValue: scoreField,
+  timeCriticality: scoreField,
+  enablement: scoreField,
+  // Story points the size selector actually offers; anything else would show
+  // as a blank option in the editor.
+  jobSize: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(5), z.literal(8)]),
+  rationale: z.string(),
+})
+
+// A draft the UI can render. 'stub' is the deterministic heuristic, 'llm' is
+// the model, and 'stub-fallback' is the heuristic served after a live call
+// failed or returned something malformed. The three are labeled distinctly in
+// the UI so stub output is never passed off as the model's.
+export const groomDraftSchema = groomDraftContentSchema.extend({
+  source: z.enum(['stub', 'llm', 'stub-fallback']),
+})
+
+export type GroomDraft = z.infer<typeof groomDraftSchema>
 
 /**
  * Deterministic story draft from a raw capture. Intentionally modest: it puts

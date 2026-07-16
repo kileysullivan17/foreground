@@ -243,6 +243,17 @@ hosted Supabase.
     One place each for read failures and write failures, instead of
     per-call handling that would drift.
 
+45. **F7 + F11: the grooming path validates and tells the truth about
+    failure.** The draft shape is now a Zod schema in `groomDraft.ts`
+    (`GroomDraft` is inferred from it), validated on both wire ends: the
+    server parses the model's JSON against it and the client parses the fetch
+    response against it, so a malformed body falls back to the stub instead of
+    reaching the editor. The server `catch` logs the error (`console.error`)
+    before falling back, so a live-mode failure leaves a trail. And the
+    fallback carries a distinct `stub-fallback` source, letting the UI say the
+    model call failed rather than implying it was never wired, which is the
+    honest difference between "not configured" and "configured but errored".
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

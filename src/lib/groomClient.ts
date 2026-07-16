@@ -1,4 +1,4 @@
-import { draftStoryHeuristic, type GroomDraft } from './groomDraft'
+import { draftStoryHeuristic, groomDraftSchema, type GroomDraft } from './groomDraft'
 
 /**
  * Ask the serverless proxy for a story draft. Anywhere the function isn't
@@ -23,10 +23,10 @@ export async function requestGroomDraft(rawTitle: string): Promise<GroomDraft> {
       body: JSON.stringify({ title: rawTitle }),
     })
     if (res.ok) {
-      const data = (await res.json()) as Partial<GroomDraft>
-      if (typeof data.title === 'string' && Array.isArray(data.acceptanceCriteria)) {
-        return data as GroomDraft
-      }
+      // Validate the response before handing it to the editor; a malformed
+      // body falls through to the local stub instead of rendering garbage.
+      const parsed = groomDraftSchema.safeParse(await res.json())
+      if (parsed.success) return parsed.data
     }
   } catch {
     // no serverless runtime here; fall through to the local stub

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
-import { draftStoryHeuristic, type GroomDraft } from '../src/lib/groomDraft'
+import { draftStoryHeuristic, groomDraftContentSchema } from '../src/lib/groomDraft'
 
 // Grooming proxy. The Anthropic call is gated behind two Vercel env vars,
 // GROOM_LLM=live and ANTHROPIC_API_KEY; with either missing the endpoint
@@ -119,10 +119,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
     const text = response.content.find((block) => block.type === 'text')?.text
     if (!text) throw new Error('no text block in response')
-    const draft = JSON.parse(text) as Omit<GroomDraft, 'source'>
-    return res.status(200).json({ ...draft, source: 'llm' } satisfies GroomDraft)
-  } catch {
-    // Fail soft: the stub is clearly labeled in the UI, never silently wrong.
-    return res.status(200).json(draftStoryHeuristic(title))
+    // Validate the model's JSON before trusting it; a schema miss is treated
+    // like any other failure and falls through to the labeled stub.
+    const draft = groomDraftContentSchema.parse(JSON.parse(text))
+    return res.status(200).json({ ...draft, source: 'llm' })
+  } catch (err) {
+    // Fail soft, but leave a server-side trail, and label the fallback
+    // distinctly so the UI can say the model call failed rather than that it
+    // was never wired.
+    console.error('groom: live draft failed, serving stub fallback', err)
+    return res.status(200).json({ ...draftStoryHeuristic(title), source: 'stub-fallback' })
   }
 }

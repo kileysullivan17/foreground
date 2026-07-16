@@ -22,6 +22,14 @@ const inputCls =
   'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800'
 const smallBtn = 'rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95'
 
+// Each draft names its origin honestly: the model, the offline stub, or the
+// stub served because a live call failed.
+const draftSourceLabel: Record<GroomDraft['source'], string> = {
+  llm: 'Proposed draft from the model.',
+  stub: 'Proposed draft from the local stub (the model call is not wired yet).',
+  'stub-fallback': 'The model call failed, so this is a local stub draft instead.',
+}
+
 function acProgress(story: Story): string | null {
   if (story.acceptanceCriteria.length === 0) return null
   const done = story.acceptanceCriteria.filter((c) => c.done).length
@@ -245,10 +253,7 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
           {draft && draftStory ? (
             <div className="mt-3">
               <p className="rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-900 dark:bg-indigo-950 dark:text-indigo-200">
-                {draft.source === 'stub'
-                  ? 'Proposed draft from the local stub (the model call is not wired yet). '
-                  : 'Proposed draft from the model. '}
-                {draft.rationale} Nothing applies until you save.
+                {draftSourceLabel[draft.source]} {draft.rationale} Nothing applies until you save.
               </p>
               <div className="mt-3">
                 <StoryEditor story={draftStory} onClose={() => setDraft(null)} />
