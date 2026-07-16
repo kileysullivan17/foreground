@@ -100,8 +100,15 @@ export function WhatNow() {
   const projects = projectsQuery.data ?? NO_ITEMS
 
   // Rank against the full item set (so cross-area dependencies count),
-  // then filter the display by area.
-  const { ready, blocked } = useMemo(() => rankItems(items, { quickWins }), [items, quickWins])
+  // then filter the display by area. `today` is a memo dependency so a tab
+  // left open across midnight re-ranks for the new day (deadlines and
+  // staleness both move) instead of holding yesterday's ranking. rankItems
+  // reads the clock itself, so `today` only needs to trigger recomputation.
+  const today = new Date().toDateString()
+  const { ready, blocked } = useMemo(() => {
+    void today // recompute trigger at the day boundary; see above
+    return rankItems(items, { quickWins })
+  }, [items, quickWins, today])
   const inArea = (s: ScoredItem) => area === 'all' || s.item.area === area
   const readyShown = ready.filter(inArea)
   const blockedShown = blocked.filter(inArea)

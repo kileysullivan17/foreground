@@ -275,6 +275,15 @@ hosted Supabase.
     maximally stale importance-1 item that scores zero), documented as
     intended behavior.
 
+48. **F12: the ranking re-ranks at midnight.** `rankItems` reads the current
+    date internally, but What Now memoized it on `[items, quickWins]`, so a
+    tab left open across midnight kept yesterday's ranking until something
+    else changed, even though deadline urgency and staleness had both moved.
+    Added the current day string to the memo dependencies so a render after
+    midnight recomputes for the new day. It only forces recomputation when a
+    render happens; it does not wake an idle tab, which is fine, the next
+    interaction re-ranks correctly instead of showing a stale order.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).
