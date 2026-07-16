@@ -19,8 +19,8 @@ export function About() {
           Ranking uses WSJF (Weighted Shortest Job First), adapted for one person: cost of delay
           (deadline urgency, declared importance, how much other work an item unblocks, and a small
           momentum nudge for started work) divided by job size, then multiplied by a staleness
-          boost that grows the longer an item goes untouched. Every card shows its full arithmetic
-          in plain language, so a surprising rank is always either trustworthy or fixable at the
+          boost that grows the longer an item goes untouched. Every ranked card shows its full
+          arithmetic in plain language, so a surprising rank is always either trustworthy or fixable at the
           input. The same model runs at backlog zoom in the Product tab, where this app's own
           roadmap lives as user stories with acceptance criteria on a kanban board, groomed with an
           LLM assistant that proposes and never applies. The full model, with every weight and its
