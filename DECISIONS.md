@@ -254,6 +254,15 @@ hosted Supabase.
     model call failed rather than implying it was never wired, which is the
     honest difference between "not configured" and "configured but errored".
 
+46. **F5: the cycle guard now runs at save, not just in the picker.** The
+    dependency picker already hid an item's transitive dependents so you
+    could not pick a cycle, but the exclusion was computed once when the
+    editor opened. If another editor added edges in between, a stale `dependsOn`
+    could still commit a cycle. `save()` now recomputes the forbidden set from
+    the current item list and filters `dependsOn` against it (and drops any
+    self-reference) right before the mutation, so the invariant holds under
+    concurrent edits instead of only in the happy path.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

@@ -50,6 +50,12 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
   )
 
   const save = () => {
+    // Recompute the forbidden set from the current item list at save time, not
+    // just when building the picker: another editor may have added edges since
+    // this editor opened, so filtering here is what actually stops two
+    // concurrent edits from committing a dependency cycle.
+    const forbiddenNow = transitiveDependents(item.id, allItems)
+    const safeDependsOn = dependsOn.filter((id) => id !== item.id && !forbiddenNow.has(id))
     update.mutate(
       {
         id: item.id,
@@ -60,7 +66,7 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
           importance,
           hardDeadline: deadline || null,
           status,
-          dependsOn,
+          dependsOn: safeDependsOn,
         },
       },
       { onSuccess: onClose },
