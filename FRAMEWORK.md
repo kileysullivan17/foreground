@@ -61,9 +61,20 @@ Effort divides. Small = 1, Medium = 2, Large = 3, so a medium job needs
 twice the cost of delay to hold the same rank as a small one. This is the
 WSJF trade: two urgent-ish small things usually beat one big thing started
 late in the day. A consequence worth stating honestly: a big job with a
-near deadline can rank below a small stale item. Among items of similar
-size deadlines still dominate (the tests pin this), and the deadline curve
-is steep enough that overdue work surfaces regardless.
+near deadline can rank below a small stale item.
+
+What a deadline guarantees is narrower than "deadlines always win", and it
+is worth being exact about. Staleness is a multiplier, so it can only
+amplify cost of delay an item already has; applied to an item with none it
+changes nothing. A deadline always carries deadline points, so it beats any
+staleness-boosted *trivial* item, one whose own cost of delay is essentially
+zero (lowest importance, nothing waiting on it, not in progress): that item
+scores zero no matter how long it has been ignored, because the multiplier
+has nothing to act on. What a deadline does not do is beat an *important*
+item that happens to be stale, because that item has real cost of delay for
+staleness to amplify. So an important, long-ignored task with no deadline can
+outrank a far-off deadline, and that is intended. The boundary, a bare
+deadline beating a maximally stale trivial item, is pinned by a test.
 
 The quick-wins toggle steepens the divisors to 1 / 3 / 6 for a low-energy
 hour. Big jobs actively sink rather than merely failing to rise, and the

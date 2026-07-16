@@ -263,6 +263,18 @@ hosted Supabase.
     self-reference) right before the mutation, so the invariant holds under
     concurrent edits instead of only in the happy path.
 
+47. **F6: FRAMEWORK.md's deadline-dominance claim now matches the math.** The
+    old text said that among items of similar size "deadlines still dominate",
+    which overclaims: an important, stale, no-deadline item can and should
+    outrank a far-off deadline, because staleness has real cost of delay to
+    amplify there. The true guarantee is narrower and follows from staleness
+    being a multiplier: a deadline beats any staleness-boosted *trivial* item,
+    one with essentially zero cost of delay of its own, because the multiplier
+    applied to zero is still zero. Rewrote the section to state exactly that
+    and added a test pinning the boundary (a bare far-future deadline over a
+    maximally stale importance-1 item that scores zero), documented as
+    intended behavior.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

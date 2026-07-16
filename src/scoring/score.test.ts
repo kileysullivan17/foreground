@@ -98,6 +98,24 @@ describe('staleness multiplier', () => {
     expect(ready[0]?.item.id).toBe(dueTomorrow.id)
   })
 
+  it('a bare deadline beats any staleness-boosted trivial item (the boundary)', () => {
+    // A trivial item — lowest importance, nothing waiting on it, not in
+    // progress — has zero cost of delay, and the staleness multiplier applied
+    // to zero is still zero. So even the weakest deadline (far future, worth
+    // 2 points) outranks the most stale trivial item there can be. This is the
+    // documented boundary in FRAMEWORK.md: staleness amplifies an existing
+    // signal, it never invents one. Intended behavior, pinned here.
+    const farDeadline = makeItem({ hardDeadline: date(60), importance: 1 })
+    const ancientTrivial = makeItem({ importance: 1, lastTouchedAt: iso(-1000) })
+    const { ready } = rankItems([ancientTrivial, farDeadline], { now: NOW })
+    expect(ready[0]?.item.id).toBe(farDeadline.id)
+
+    const trivial = ready.find((s) => s.item.id === ancientTrivial.id)
+    expect(trivial?.staleness?.multiplier).toBe(1.5) // fully boosted…
+    expect(trivial?.costOfDelay).toBe(0) // …but there is nothing to boost,
+    expect(trivial?.score).toBe(0) // so the score stays at zero.
+  })
+
   it('stays quiet for recently touched items', () => {
     const fresh = scoreItem(makeItem({ lastTouchedAt: iso(-1) }), [], { now: NOW })
     expect(fresh.staleness).toBeNull()
