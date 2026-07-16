@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCreateStory, useStories, useUpdateStory } from '../hooks/useData'
+import { QueryStates } from '../components/QueryStates'
 import { compareStories, storyWsjf } from '../scoring/wsjf'
 import { storyStatusLabels } from '../lib/format'
 import { requestGroomDraft } from '../lib/groomClient'
@@ -387,7 +388,8 @@ function CaptureIdea() {
 }
 
 export function Product() {
-  const stories = useStories().data ?? []
+  const storiesQuery = useStories()
+  const stories = storiesQuery.data ?? []
   const [openId, setOpenId] = useState<string | null>(null)
   const [showLater, setShowLater] = useState(false)
 
@@ -404,6 +406,7 @@ export function Product() {
         </p>
       </div>
 
+      <QueryStates queries={[storiesQuery]}>
       <div className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2">
         {COLUMNS.map((col) => {
           const colStories = stories.filter((s) => s.status === col.status).sort(compareStories)
@@ -454,6 +457,7 @@ export function Product() {
           </section>
         )}
       </div>
+      </QueryStates>
 
       {open && <StorySheet story={open} onClose={() => setOpenId(null)} />}
     </main>

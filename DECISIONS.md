@@ -232,6 +232,17 @@ hosted Supabase.
     never hit the network) keep working with zero setup. Real request
     authentication waits on the same auth pass as F2.
 
+44. **F3 + F4: loading and failure are now visible.** Every screen read its
+    queries as `data ?? []`, so a still-loading or failed fetch looked
+    identical to an empty list, and a failed save vanished silently. A shared
+    `QueryStates` component branches on query status and renders a loading
+    line or an error panel with a retry, keeping each screen's header and
+    controls mounted around it. A `MutationCache` `onError` in `main.tsx`
+    raises a toast (via a tiny external store so non-component code can reach
+    it) whose Retry re-runs the failed mutation with its original variables.
+    One place each for read failures and write failures, instead of
+    per-call handling that would drift.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

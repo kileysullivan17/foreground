@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCreateItem, useCreateProject, useItems, useProjects, useUpdateItem, useUpdateProject } from '../hooks/useData'
 import { Segmented } from '../components/Segmented'
 import { DependencyView } from '../components/DependencyView'
+import { QueryStates } from '../components/QueryStates'
 import { effortLabels, formatDate, statusLabels } from '../lib/format'
 import type { Area, Effort, Item, Project, Status } from '../types'
 
@@ -309,8 +310,10 @@ function NewProjectForm({ area }: { area: Area }) {
 }
 
 export function Projects() {
-  const projects = useProjects().data ?? []
-  const items = useItems().data ?? []
+  const projectsQuery = useProjects()
+  const itemsQuery = useItems()
+  const projects = projectsQuery.data ?? []
+  const items = itemsQuery.data ?? []
 
   const areas: { area: Area; heading: string }[] = [
     { area: 'work', heading: 'Work' },
@@ -320,6 +323,7 @@ export function Projects() {
   return (
     <main className="mx-auto max-w-lg space-y-6 px-4 pt-4 pb-4">
       <h1 className="text-2xl font-bold">Projects</h1>
+      <QueryStates queries={[projectsQuery, itemsQuery]}>
       {areas.map(({ area, heading }) => {
         const loose = items.filter((i) => i.area === area && i.projectId === null)
         return (
@@ -347,6 +351,7 @@ export function Projects() {
           </section>
         )
       })}
+      </QueryStates>
     </main>
   )
 }

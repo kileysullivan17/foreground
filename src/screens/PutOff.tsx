@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { daysSinceTouched, rankByStaleness } from '../scoring/score'
 import { useItems, useProjects, useTouchItem } from '../hooks/useData'
 import { Segmented } from '../components/Segmented'
+import { QueryStates } from '../components/QueryStates'
 import type { Area, Item, Project } from '../types'
 
 type AreaFilter = 'all' | Area
@@ -90,8 +91,10 @@ function PutOffRow({ item, projects }: { item: Item; projects: Project[] }) {
 
 export function PutOff() {
   const [area, setArea] = useState<AreaFilter>('all')
-  const items = useItems().data ?? NO_ITEMS
-  const projects = useProjects().data ?? NO_ITEMS
+  const itemsQuery = useItems()
+  const projectsQuery = useProjects()
+  const items = itemsQuery.data ?? NO_ITEMS
+  const projects = projectsQuery.data ?? NO_ITEMS
 
   const stale = useMemo(() => rankByStaleness(items), [items])
   const shown = stale.filter((i) => area === 'all' || i.area === area)
@@ -115,14 +118,16 @@ export function PutOff() {
         />
       </div>
 
-      <ul className="mt-4 space-y-3">
-        {shown.map((item) => (
-          <PutOffRow key={item.id} item={item} projects={projects} />
-        ))}
-        {shown.length === 0 && (
-          <p className="py-8 text-center text-zinc-500">Nothing lingering. Suspicious.</p>
-        )}
-      </ul>
+      <QueryStates queries={[itemsQuery, projectsQuery]}>
+        <ul className="mt-4 space-y-3">
+          {shown.map((item) => (
+            <PutOffRow key={item.id} item={item} projects={projects} />
+          ))}
+          {shown.length === 0 && (
+            <p className="py-8 text-center text-zinc-500">Nothing lingering. Suspicious.</p>
+          )}
+        </ul>
+      </QueryStates>
     </main>
   )
 }

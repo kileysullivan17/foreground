@@ -4,6 +4,7 @@ import { useItems, useProjects } from '../hooks/useData'
 import { Segmented } from '../components/Segmented'
 import { StatusActions } from '../components/StatusActions'
 import { DependencyView } from '../components/DependencyView'
+import { QueryStates } from '../components/QueryStates'
 import { effortLabels } from '../lib/format'
 import type { Area, Item, Project } from '../types'
 
@@ -93,8 +94,10 @@ export function WhatNow() {
   const [area, setArea] = useState<AreaFilter>('all')
   const [quickWins, setQuickWins] = useState(false)
   const [showBlocked, setShowBlocked] = useState(false)
-  const items = useItems().data ?? NO_ITEMS
-  const projects = useProjects().data ?? NO_ITEMS
+  const itemsQuery = useItems()
+  const projectsQuery = useProjects()
+  const items = itemsQuery.data ?? NO_ITEMS
+  const projects = projectsQuery.data ?? NO_ITEMS
 
   // Rank against the full item set (so cross-area dependencies count),
   // then filter the display by area.
@@ -131,33 +134,35 @@ export function WhatNow() {
         </button>
       </div>
 
-      <ul className="mt-4 space-y-3">
-        {readyShown.map((s) => (
-          <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
-        ))}
-        {readyShown.length === 0 && (
-          <p className="py-8 text-center text-zinc-500">Nothing workable here. Add something?</p>
-        )}
-      </ul>
-
-      {blockedShown.length > 0 && (
-        <section className="mt-6 pb-4">
-          <button
-            type="button"
-            className="text-sm font-medium text-zinc-500 dark:text-zinc-400"
-            onClick={() => setShowBlocked((v) => !v)}
-          >
-            {showBlocked ? '▾' : '▸'} Blocked ({blockedShown.length}): waiting on other items
-          </button>
-          {showBlocked && (
-            <ul className="mt-3 space-y-3">
-              {blockedShown.map((s) => (
-                <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
-              ))}
-            </ul>
+      <QueryStates queries={[itemsQuery, projectsQuery]}>
+        <ul className="mt-4 space-y-3">
+          {readyShown.map((s) => (
+            <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
+          ))}
+          {readyShown.length === 0 && (
+            <p className="py-8 text-center text-zinc-500">Nothing workable here. Add something?</p>
           )}
-        </section>
-      )}
+        </ul>
+
+        {blockedShown.length > 0 && (
+          <section className="mt-6 pb-4">
+            <button
+              type="button"
+              className="text-sm font-medium text-zinc-500 dark:text-zinc-400"
+              onClick={() => setShowBlocked((v) => !v)}
+            >
+              {showBlocked ? '▾' : '▸'} Blocked ({blockedShown.length}): waiting on other items
+            </button>
+            {showBlocked && (
+              <ul className="mt-3 space-y-3">
+                {blockedShown.map((s) => (
+                  <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+      </QueryStates>
     </main>
   )
 }
