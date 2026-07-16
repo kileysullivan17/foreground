@@ -6,6 +6,37 @@ import { draftStoryHeuristic, type GroomDraft } from '../src/lib/groomDraft'
 // GROOM_LLM=live and ANTHROPIC_API_KEY; with either missing the endpoint
 // returns the deterministic stub draft, so the whole flow works before the
 // key is wired in a supervised session. The key only ever lives here.
+//
+// Two guards sit in front of the handler as a COST gate, not a security
+// boundary: a shared secret (GROOM_SECRET) the client must echo in a header,
+// and a best-effort per-IP rate limit. The client's copy of the secret is a
+// build-time VITE_ var and therefore ships in the browser bundle, so anyone
+// who wants it can read it; the point is to keep casual/accidental traffic
+// off the paid endpoint, not to authenticate callers.
+
+const MAX_TITLE_LEN = 300
+
+// Best-effort per-IP throttle. Serverless instances are ephemeral and not
+// shared, so this only bounds bursts hitting the same warm instance; it is a
+// cost speed-bump, not a real limiter. Kept in-process deliberately (no
+// external store) for a single-user portfolio app.
+const RATE_WINDOW_MS = 60_000
+const RATE_MAX = 12
+const ipHits = new Map<string, number[]>()
+
+function clientIp(req: VercelRequest): string {
+  const fwd = req.headers['x-forwarded-for']
+  const raw = Array.isArray(fwd) ? fwd[0] : fwd
+  return raw?.split(',')[0]?.trim() || 'unknown'
+}
+
+function overRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const recent = (ipHits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS)
+  recent.push(now)
+  ipHits.set(ip, recent)
+  return recent.length > RATE_MAX
+}
 
 const DRAFT_SCHEMA = {
   type: 'object',
@@ -52,9 +83,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'POST only' })
   }
+
+  // Cost gate. Enforced only when GROOM_SECRET is configured, so stub-only
+  // deployments and local dev keep working with no config. When set, the
+  // client must echo it in x-groom-secret (injected at build time).
+  const secret = process.env.GROOM_SECRET
+  if (secret && req.headers['x-groom-secret'] !== secret) {
+    return res.status(401).json({ error: 'bad or missing groom secret' })
+  }
+
+  if (overRateLimit(clientIp(req))) {
+    return res.status(429).json({ error: 'too many requests, slow down' })
+  }
+
   const title = typeof req.body?.title === 'string' ? req.body.title.trim() : ''
   if (!title) {
     return res.status(400).json({ error: 'title required' })
+  }
+  if (title.length > MAX_TITLE_LEN) {
+    return res.status(400).json({ error: `title too long (max ${MAX_TITLE_LEN})` })
   }
 
   if (process.env.GROOM_LLM !== 'live' || !process.env.ANTHROPIC_API_KEY) {

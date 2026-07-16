@@ -92,6 +92,15 @@ default: without `GROOM_LLM=live` and `ANTHROPIC_API_KEY` in the Vercel
 project env it returns a deterministic local draft, clearly labeled in the
 UI, so the whole flow works with no key anywhere in the repo or client.
 
+The endpoint sits behind a cost gate, not a security boundary: a shared
+secret (`GROOM_SECRET` server-side, `VITE_GROOM_SECRET` in the client build,
+set to the same value) plus a best-effort per-IP rate limit and a 300
+character cap on the title. The client's secret is injected at build time
+and therefore ships in the browser bundle, so it only keeps casual traffic
+off the paid endpoint; it does not authenticate callers. Leave both unset to
+run the endpoint open (fine for stub-only deploys). In dev the grooming call
+never leaves the browser, so the secret is irrelevant locally.
+
 ## Repo notes
 
 - `FRAMEWORK.md`: the prioritization model as a PM artifact.

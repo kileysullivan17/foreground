@@ -213,6 +213,25 @@ Judgment calls made during the build, and why. Newest last.
     specific prose). Two v1 leftovers fixed in passing: the Blocked
     section toggle and a seed note.
 
+## v2.1: audit remediation
+
+An audit of the v2 build surfaced a numbered findings list; this section
+logs the fixes and the judgment in each. F2 (Supabase RLS) is deliberately
+left for its own pass alongside the auth design, before any deploy points at
+hosted Supabase.
+
+43. **F1: the grooming endpoint is a cost gate, not an auth boundary.**
+    `api/groom.ts` now checks a shared secret (`GROOM_SECRET`) echoed by the
+    client in `x-groom-secret`, caps the title at 300 characters, and applies
+    a best-effort per-IP rate limit (12/minute per warm instance). The
+    client's secret comes from `VITE_GROOM_SECRET`, injected at build time,
+    so it ships in the browser bundle and is readable by anyone: the goal is
+    to keep casual traffic off the paid Anthropic call, not to authenticate
+    callers, and the code and docs say so plainly. All three guards are
+    skipped when unconfigured, so stub-only deploys and local dev (which
+    never hit the network) keep working with zero setup. Real request
+    authentication waits on the same auth pass as F2.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

@@ -10,9 +10,16 @@ export async function requestGroomDraft(rawTitle: string): Promise<GroomDraft> {
   // (and its console 404) and draft locally.
   if (import.meta.env.DEV) return draftStoryHeuristic(rawTitle)
   try {
+    // The endpoint's cost gate wants a shared secret. It is injected at build
+    // time from VITE_GROOM_SECRET, so the deployed bundle carries it; unset
+    // (e.g. stub-only deploys) means no header and the server skips the check.
+    const secret = import.meta.env.VITE_GROOM_SECRET
     const res = await fetch('/api/groom', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        ...(secret ? { 'x-groom-secret': secret } : {}),
+      },
       body: JSON.stringify({ title: rawTitle }),
     })
     if (res.ok) {
