@@ -1,9 +1,107 @@
 @import 'tailwindcss';
 
+/* Dark mode is class-driven (the toggle in the header), not media-driven:
+   the choice persists in localStorage and index.html applies it pre-paint. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Organic tokens, ported from design/organic-tokens.css. Everything here
+   EXTENDS the default theme; zinc/emerald utilities keep working while
+   screens migrate. Deliberate deviations from the design package:
+   - the 4.4px spacing scale is not ported (it would repaint every padding
+     and margin utility on unmigrated screens); only the 44px tap target
+     ships, as `tap`.
+   - shadow-sm/md/lg are overridden with the ink-tinted equivalents; the
+     old cool-gray shadows differ imperceptibly on unmigrated screens. */
 @theme {
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Caprasimo', serif;
+  --font-body: 'Figtree', system-ui, sans-serif;
+
+  --color-ground: #f5ead8;
+  --color-ground-dark: #201e1d;
+  --color-surface: #ebddc5;
+  --color-surface-raised: #f9f4ed;
+  --color-surface-dark: #2e2b25;
+  --color-surface-dark-raised: #474238;
+  --color-ink: #201e1d;
+  --color-ink-inverse: #f5ead8;
+
+  --color-sand-100: #f9f4ed;
+  --color-sand-200: #eee7db;
+  --color-sand-300: #dcd3c4;
+  --color-sand-400: #c0b6a5;
+  --color-sand-500: #a19786;
+  --color-sand-600: #82796a;
+  --color-sand-700: #645c50;
+  --color-sand-800: #474238;
+  --color-sand-900: #2e2b25;
+
+  --color-clay: #c67139;
+  --color-clay-100: #fff2eb;
+  --color-clay-200: #ffe1d0;
+  --color-clay-300: #ffc6a5;
+  --color-clay-400: #f6a06b;
+  --color-clay-500: #d67f48;
+  --color-clay-600: #b2622d;
+  --color-clay-700: #8c491a;
+  --color-clay-800: #643312;
+  --color-clay-900: #402310;
+
+  --color-sage: #7a8a5e;
+  --color-sage-100: #f0fae1;
+  --color-sage-200: #e1eecc;
+  --color-sage-300: #ccdbb2;
+  --color-sage-400: #aebf92;
+  --color-sage-500: #8fa073;
+  --color-sage-600: #728157;
+  --color-sage-700: #56633f;
+  --color-sage-800: #3d472b;
+  --color-sage-900: #272e1b;
+
+  /* The only red anywhere; reserved for a truly overdue deadline. */
+  --color-overdue: #9c2f25;
+  --color-overdue-dark: #ff9d85;
+
+  --text-micro: 11px;
+  --text-micro--line-height: 16px;
+  --text-micro--letter-spacing: 0.1em;
+  --text-meta: 12.5px;
+  --text-meta--line-height: 18px;
+  --text-detail: 13.5px;
+  --text-detail--line-height: 19px;
+  --text-body: 14.5px;
+  --text-body--line-height: 22px;
+  --text-card: 16px;
+  --text-card--line-height: 21px;
+  --text-card--font-weight: 600;
+  --text-title: 25px;
+  --text-title--line-height: 29px;
+  --text-display: 31px;
+  --text-display--line-height: 35px;
+  --text-score: 24px;
+  --text-score--line-height: 24px;
+  --text-score-lg: 30px;
+  --text-score-lg--line-height: 30px;
+
+  --spacing-tap: 44px;
+
+  --radius-chip: 12px;
+  --radius-ctl: 16px;
+  --radius-card: 24px;
+  --radius-sheet: 28px;
+  --radius-hero: 32px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(46, 43, 37, 0.14);
+  --shadow-md: 0 3px 10px rgba(46, 43, 37, 0.16);
+  --shadow-lg: 0 12px 32px rgba(46, 43, 37, 0.22);
+  --shadow-sheet: 0 -12px 32px rgba(46, 43, 37, 0.25);
 }
 
 html {
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(198, 113, 57, 0.3);
 }

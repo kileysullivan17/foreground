@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { WhatNow } from './screens/WhatNow'
+import { ThemeToggle } from './components/ThemeToggle'
 import { PutOff } from './screens/PutOff'
 import { Projects } from './screens/Projects'
 import { AddItem } from './screens/AddItem'
@@ -38,6 +39,7 @@ export default function App() {
           >
             About
           </Link>
+          <ThemeToggle />
         </header>
         <Routes>
           <Route path="/" element={<WhatNow />} />

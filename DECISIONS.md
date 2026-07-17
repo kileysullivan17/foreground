@@ -284,6 +284,38 @@ hosted Supabase.
     render happens; it does not wake an idle tab, which is fine, the next
     interaction re-ranks correctly instead of showing a stale order.
 
+## v2.2: the Organic redesign
+
+49. **Tokens live in CSS `@theme`, not tailwind.config.js.** The design
+    package ships a tailwind.config.js drop-in, but this repo runs Tailwind
+    v4 via `@tailwindcss/vite`, where theme extension is CSS-first. The same
+    tokens (ground/surface/ink, sand/clay/sage ramps, Caprasimo + Figtree,
+    text/radius/shadow scales) went into `@theme` in `src/index.css`, which
+    extends the default theme, so existing zinc/emerald classes keep working
+    while screens migrate one commit at a time. Two deliberate deviations,
+    noted in the CSS: the design's 4.4px spacing scale is not ported (it
+    would silently repaint every `p-*`/`m-*` on unmigrated screens; only
+    `tap` = 44px ships), and `shadow-sm/md/lg` are overridden with the
+    ink-tinted values since the visual difference on old screens is
+    imperceptible.
+
+50. **Contrast verified programmatically; no ramp step needed darkening.**
+    `scripts/contrast-check.mjs` computes WCAG ratios for all 48 small-text
+    pairs the design uses (both themes, translucent ledger insets composited
+    onto their real grounds before measuring). Every pair clears 4.5:1; the
+    lowest are sand-700 meta on the dark theme's inverted ledger (4.94) and
+    sand-500 meta on the ink panel's ledger (4.68). The script exits nonzero
+    on failure so it can gate future palette retunes. This closes audit
+    finding F10.
+
+51. **Dark mode is a class, not a media query, and it's a user choice.** The
+    design includes a dark What Now, so the app grew a small theme toggle
+    (header, sun/moon). The choice persists in `planner-theme-v1` next to
+    the app data; with nothing saved, the system preference applies. An
+    inline script in index.html applies the class before first paint so a
+    dark load never flashes light. New small feature, logged here per the
+    design brief.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).
