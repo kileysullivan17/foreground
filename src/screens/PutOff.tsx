@@ -3,6 +3,7 @@ import { daysSinceTouched, rankByStaleness } from '../scoring/score'
 import { useItems, useProjects, useTouchItem } from '../hooks/useData'
 import { FilterChips } from '../components/FilterChips'
 import { QueryStates } from '../components/QueryStates'
+import { EmptyState } from '../components/EmptyState'
 import type { Area, Item, Project } from '../types'
 
 type AreaFilter = 'all' | Area
@@ -147,17 +148,20 @@ export function PutOff() {
         </div>
       </div>
 
-      <QueryStates queries={[itemsQuery, projectsQuery]}>
+      <QueryStates queries={[itemsQuery, projectsQuery]} loadingLabel="Sorting by staleness…">
         <ul className="space-y-2.5">
           {shown.map((item) => (
             <PutOffRow key={item.id} item={item} projects={projects} />
           ))}
-          {shown.length === 0 && (
-            <p className="py-8 text-center text-sand-700 dark:text-sand-400">
-              Nothing lingering. Suspicious.
-            </p>
-          )}
         </ul>
+        {shown.length === 0 && (
+          <EmptyState
+            title="Nothing lingering"
+            body="Suspicious. When something stalls, it surfaces here, stalest first."
+            actionLabel="Add an item"
+            actionTo="/add"
+          />
+        )}
       </QueryStates>
     </main>
   )

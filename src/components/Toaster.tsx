@@ -3,7 +3,7 @@ import { dismissToast, getToasts, subscribeToasts } from '../lib/toast'
 
 // Renders the toast store. Sits above the bottom nav so a failed save is
 // visible without covering the tab bar. Errors are announced politely for
-// screen readers.
+// screen readers and stay calm: an ink panel with a clay Retry, no red.
 export function Toaster() {
   const toasts = useSyncExternalStore(subscribeToasts, getToasts, getToasts)
   if (toasts.length === 0) return null
@@ -17,7 +17,7 @@ export function Toaster() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="pointer-events-auto flex items-center gap-3 rounded-lg bg-red-600 px-3 py-2 text-sm text-white shadow-lg"
+          className="pointer-events-auto flex items-center gap-3 rounded-ctl bg-ink px-4 py-2.5 text-detail text-ink-inverse shadow-lg dark:bg-ink-inverse dark:text-ink"
         >
           <span className="flex-1">{toast.message}</span>
           {toast.retry && (
@@ -27,7 +27,7 @@ export function Toaster() {
                 dismissToast(toast.id)
                 toast.retry!()
               }}
-              className="shrink-0 font-semibold underline underline-offset-2"
+              className="min-h-tap shrink-0 font-semibold text-clay-300 underline underline-offset-2 dark:text-clay-700"
             >
               Retry
             </button>
@@ -36,7 +36,7 @@ export function Toaster() {
             type="button"
             onClick={() => dismissToast(toast.id)}
             aria-label="Dismiss"
-            className="shrink-0 text-base font-semibold leading-none"
+            className="grid size-tap shrink-0 place-items-center text-base font-semibold leading-none"
           >
             ×
           </button>

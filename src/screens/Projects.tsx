@@ -329,7 +329,7 @@ export function Projects() {
   return (
     <main className="mx-auto max-w-lg space-y-6 px-4 pt-4 pb-4">
       <h1 className="text-2xl font-bold">Projects</h1>
-      <QueryStates queries={[projectsQuery, itemsQuery]}>
+      <QueryStates queries={[projectsQuery, itemsQuery]} loadingLabel="Loading projects…">
       {areas.map(({ area, heading }) => {
         const loose = items.filter((i) => i.area === area && i.projectId === null)
         return (

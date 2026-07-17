@@ -6,6 +6,7 @@ import { StatusActions } from '../components/StatusActions'
 import { BlockedChain, BlockedTag } from '../components/BlockedChain'
 import { QueryStates } from '../components/QueryStates'
 import { ScoreLedger } from '../components/ScoreLedger'
+import { EmptyState } from '../components/EmptyState'
 import { teaserLine } from '../lib/scoreDisplay'
 import { effortLabels } from '../lib/format'
 import type { Area, Item, Project } from '../types'
@@ -296,7 +297,11 @@ export function WhatNow() {
         </div>
       </div>
 
-      <QueryStates queries={[itemsQuery, projectsQuery]}>
+      <QueryStates
+        queries={[itemsQuery, projectsQuery]}
+        variant="foreground"
+        loadingLabel="Ranking your list: the math runs locally, give it a second."
+      >
         {first ? (
           <>
             <ForegroundCard scored={first} total={readyShown.length} projects={projects} />
@@ -314,9 +319,14 @@ export function WhatNow() {
             </ul>
           </>
         ) : (
-          <p className="py-8 text-center text-sand-700 dark:text-sand-400">
-            Nothing workable here. Add something?
-          </p>
+          <EmptyState
+            title="Nothing needs you"
+            body="No open loops right now. Add something, or go poke at what you've been avoiding."
+            actionLabel="Add an item"
+            actionTo="/add"
+            secondaryLabel="See stuff I've put off"
+            secondaryTo="/put-off"
+          />
         )}
 
         {blockedShown.length > 0 && (

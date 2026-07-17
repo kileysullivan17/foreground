@@ -726,7 +726,11 @@ export function Product() {
         </p>
       </div>
 
-      <QueryStates queries={[storiesQuery]}>
+      <QueryStates
+        queries={[storiesQuery]}
+        loadingLabel="Loading the backlog…"
+        className="mx-auto mt-3 max-w-lg px-5"
+      >
         <div className="mx-auto flex max-w-lg gap-1.5 overflow-x-auto px-5 py-3" role="tablist" aria-label="Columns">
           {COLUMNS.map((col) => {
             const n = stories.filter((s) => s.status === col.status).length
