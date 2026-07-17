@@ -5,24 +5,29 @@ interface SegmentedProps<T extends string> {
   label?: string
 }
 
+/** Small form-level segmented control in the Organic language: one pill
+ *  outline, the checked option filled clay. List screens use FilterChips
+ *  instead; this stays for compact form fields (area, effort). */
 export function Segmented<T extends string>({ options, value, onChange, label }: SegmentedProps<T>) {
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className="inline-flex rounded-lg bg-zinc-200/70 p-0.5 dark:bg-zinc-800"
+      className="inline-flex overflow-hidden rounded-pill border border-ink/18 dark:border-ink-inverse/22"
     >
-      {options.map((opt) => (
+      {options.map((opt, i) => (
         <button
           key={opt.value}
           type="button"
           role="radio"
           aria-checked={opt.value === value}
           onClick={() => onChange(opt.value)}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`min-h-tap px-4 text-[13.5px] transition-colors ${
+            i > 0 ? 'border-l border-ink/18 dark:border-ink-inverse/22' : ''
+          } ${
             opt.value === value
-              ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-600 dark:text-zinc-50'
-              : 'text-zinc-600 dark:text-zinc-400'
+              ? 'bg-clay-500 font-semibold text-ink dark:bg-clay-400'
+              : 'text-sand-800 hover:bg-ink/5 dark:text-sand-300 dark:hover:bg-ink-inverse/8'
           }`}
         >
           {opt.label}

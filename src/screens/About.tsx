@@ -3,10 +3,10 @@
 
 export function About() {
   return (
-    <main className="mx-auto max-w-lg px-4 pt-4 pb-4">
-      <h1 className="text-2xl font-bold">About Foreground</h1>
+    <main className="mx-auto max-w-lg px-5 pb-4 pt-3">
+      <h1 className="font-display text-display">About Foreground</h1>
 
-      <section className="mt-4 space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+      <section className="mt-4 space-y-4 text-detail leading-relaxed text-sand-800 dark:text-sand-300">
         <p>
           Foreground is a personal prioritization tool: one place for every open project and task
           across work and home, built to answer a single question on demand. What should I work on

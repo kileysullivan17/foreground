@@ -7,14 +7,19 @@ import { effortLabels, formatDate, statusLabels } from '../lib/format'
 import type { Area, Effort, Item, Project, Status } from '../types'
 
 const inputCls =
-  'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800'
-const smallBtn = 'rounded-lg px-3 py-1.5 text-sm font-medium active:scale-95'
+  'w-full min-h-tap rounded-pill border border-ink/15 bg-surface-raised px-4 text-detail text-ink placeholder:text-sand-600 dark:border-ink-inverse/20 dark:bg-surface-dark-raised dark:text-ink-inverse dark:placeholder:text-sand-400'
+const smallBtn =
+  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 font-display text-[14.5px] active:scale-95 disabled:opacity-50'
+const clayBtn = `${smallBtn} bg-clay-500 text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300`
+const ghostBtn = `${smallBtn} text-sand-700 hover:bg-ink/5 dark:text-sand-400 dark:hover:bg-ink-inverse/8`
 
+// Status reads in the palette's roles: sage for finished or moving work,
+// clay for in progress, sand for waiting.
 const statusDot: Record<Status, string> = {
-  open: 'bg-zinc-400',
-  in_progress: 'bg-sky-500',
-  done: 'bg-emerald-500',
-  parked: 'bg-zinc-300 dark:bg-zinc-600',
+  open: 'bg-sand-500',
+  in_progress: 'bg-clay-500 dark:bg-clay-400',
+  done: 'bg-sage-500',
+  parked: 'bg-sand-300 dark:bg-sand-700',
 }
 
 /** Ids of everything that transitively depends on `id` (kept out of the
@@ -74,17 +79,17 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
   }
 
   return (
-    <div className="mt-2 space-y-3 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/50">
+    <div className="mt-2 space-y-3 rounded-ctl bg-surface-raised p-3 dark:bg-surface-dark-raised/60">
       <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} aria-label="Title" />
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Notes"
         rows={2}
-        className={inputCls}
+        className={`${inputCls.replace('rounded-pill', 'rounded-ctl')} py-2.5`}
         aria-label="Notes"
       />
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 text-detail">
         <Segmented
           label="Effort"
           options={[
@@ -129,10 +134,10 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
       <DependencyView item={item} allItems={allItems} />
       {depCandidates.length > 0 && (
         <fieldset>
-          <legend className="text-sm font-medium">Change what this waits on</legend>
-          <div className="mt-1 max-h-36 space-y-1 overflow-y-auto">
+          <legend className="text-detail font-semibold">Change what this waits on</legend>
+          <div className="mt-1 max-h-52 overflow-y-auto">
             {depCandidates.map((c) => (
-              <label key={c.id} className="flex items-center gap-2 text-sm">
+              <label key={c.id} className="flex min-h-tap cursor-pointer items-center gap-3 text-detail">
                 <input
                   type="checkbox"
                   checked={dependsOn.includes(c.id)}
@@ -141,6 +146,7 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
                       e.target.checked ? [...prev, c.id] : prev.filter((d) => d !== c.id),
                     )
                   }
+                  className="size-[22px] flex-none appearance-none rounded-[7px] border-2 border-sand-500 bg-surface-raised checked:border-sage-600 checked:bg-sage-600 dark:border-sand-600 dark:bg-surface-dark-raised dark:checked:border-sage-500 dark:checked:bg-sage-500"
                 />
                 {c.title}
               </label>
@@ -149,10 +155,10 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
         </fieldset>
       )}
       <div className="flex gap-2">
-        <button type="button" onClick={save} disabled={update.isPending} className={`${smallBtn} bg-indigo-600 text-white disabled:opacity-50`}>
+        <button type="button" onClick={save} disabled={update.isPending} className={clayBtn}>
           Save
         </button>
-        <button type="button" onClick={onClose} className={`${smallBtn} text-zinc-500`}>
+        <button type="button" onClick={onClose} className={ghostBtn}>
           Cancel
         </button>
       </div>
@@ -203,7 +209,7 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
   }
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
+    <section className="rounded-card bg-surface p-4 dark:bg-surface-dark">
       {editingProject ? (
         <div className="space-y-2">
           <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} aria-label="Project name" />
@@ -213,10 +219,10 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
             <input type="date" value={target} onChange={(e) => setTarget(e.target.value)} className={`${inputCls} w-auto`} />
           </label>
           <div className="flex gap-2">
-            <button type="button" onClick={saveProject} className={`${smallBtn} bg-indigo-600 text-white`}>
+            <button type="button" onClick={saveProject} className={clayBtn}>
               Save
             </button>
-            <button type="button" onClick={() => setEditingProject(false)} className={`${smallBtn} text-zinc-500`}>
+            <button type="button" onClick={() => setEditingProject(false)} className={ghostBtn}>
               Cancel
             </button>
           </div>
@@ -225,15 +231,15 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
         <button type="button" className="block w-full text-left" onClick={() => setEditingProject(true)}>
           <div className="flex items-baseline justify-between gap-2">
             <h3 className="font-semibold">{project.name}</h3>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-sand-700 dark:text-sand-400">
               {openCount} open{project.targetDate ? ` · target ${formatDate(project.targetDate)}` : ''}
             </span>
           </div>
-          {project.goal && <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{project.goal}</p>}
+          {project.goal && <p className="mt-0.5 text-detail text-sand-700 dark:text-sand-400">{project.goal}</p>}
         </button>
       )}
 
-      <ul className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-800">
+      <ul className="mt-2 divide-y divide-ink/8 dark:divide-ink-inverse/10">
         {mine.map((item) => (
           <li key={item.id} className="py-2">
             <button
@@ -242,10 +248,10 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
               onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
             >
               <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[item.status]}`} />
-              <span className={`flex-1 text-sm ${item.status === 'done' ? 'text-zinc-400 line-through' : ''}`}>
+              <span className={`flex-1 text-sm ${item.status === 'done' ? 'text-sand-600 line-through dark:text-sand-500' : ''}`}>
                 {item.title}
               </span>
-              <span className="text-xs text-zinc-400">
+              <span className="text-xs text-sand-600 dark:text-sand-500">
                 {effortLabels[item.effort][0]}
                 {item.hardDeadline ? ` · ${formatDate(item.hardDeadline)}` : ''}
               </span>
@@ -267,7 +273,7 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
         <button
           type="submit"
           disabled={!newTitle.trim() || createItem.isPending}
-          className={`${smallBtn} shrink-0 bg-zinc-200 dark:bg-zinc-700 disabled:opacity-50`}
+          className={`${smallBtn} shrink-0 border-[1.5px] border-ink/25 text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8`}
         >
           Add
         </button>
@@ -284,7 +290,7 @@ function NewProjectForm({ area }: { area: Area }) {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+      <button type="button" onClick={() => setOpen(true)} className="flex min-h-tap items-center text-detail font-semibold text-clay-700 dark:text-clay-300">
         + New project
       </button>
     )
@@ -300,14 +306,14 @@ function NewProjectForm({ area }: { area: Area }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-2 rounded-xl border border-dashed border-zinc-300 p-3 dark:border-zinc-700">
+    <form onSubmit={submit} className="space-y-2 rounded-card border-[1.5px] border-dashed border-sand-600 p-3.5 dark:border-sand-500">
       <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Project name" className={inputCls} />
       <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Goal (what does done look like?)" className={inputCls} />
       <div className="flex gap-2">
-        <button type="submit" disabled={!name.trim()} className={`${smallBtn} bg-indigo-600 text-white disabled:opacity-50`}>
+        <button type="submit" disabled={!name.trim()} className={clayBtn}>
           Create
         </button>
-        <button type="button" onClick={() => setOpen(false)} className={`${smallBtn} text-zinc-500`}>
+        <button type="button" onClick={() => setOpen(false)} className={ghostBtn}>
           Cancel
         </button>
       </div>
@@ -328,22 +334,22 @@ export function Projects() {
 
   return (
     <main className="mx-auto max-w-lg space-y-6 px-4 pt-4 pb-4">
-      <h1 className="text-2xl font-bold">Projects</h1>
+      <h1 className="font-display text-display">Projects</h1>
       <QueryStates queries={[projectsQuery, itemsQuery]} loadingLabel="Loading projects…">
       {areas.map(({ area, heading }) => {
         const loose = items.filter((i) => i.area === area && i.projectId === null)
         return (
           <section key={area} className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">{heading}</h2>
+            <h2 className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">{heading}</h2>
             {projects
               .filter((p) => p.area === area)
               .map((p) => (
                 <ProjectCard key={p.id} project={p} items={items} />
               ))}
             {loose.length > 0 && (
-              <section className="rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <h3 className="font-semibold text-zinc-500">No project</h3>
-                <ul className="mt-1 divide-y divide-zinc-100 dark:divide-zinc-800">
+              <section className="rounded-card bg-surface p-4 dark:bg-surface-dark">
+                <h3 className="font-semibold text-sand-700 dark:text-sand-400">No project</h3>
+                <ul className="mt-1 divide-y divide-ink/8 dark:divide-ink-inverse/10">
                   {loose.map((item) => (
                     <li key={item.id} className="flex items-center gap-2 py-2 text-sm">
                       <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[item.status]}`} />

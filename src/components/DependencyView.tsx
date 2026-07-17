@@ -6,10 +6,10 @@ import type { Item, Status } from '../types'
 // a nested list stays readable at 390px, an edge diagram would not.
 
 const dot: Record<Status, string> = {
-  open: 'bg-zinc-400',
-  in_progress: 'bg-sky-500',
-  done: 'bg-emerald-500',
-  parked: 'bg-zinc-300 dark:bg-zinc-600',
+  open: 'bg-sand-500',
+  in_progress: 'bg-clay-500 dark:bg-clay-400',
+  done: 'bg-sage-500',
+  parked: 'bg-sand-300 dark:bg-sand-700',
 }
 
 function related(item: Item, all: Item[], dir: 'up' | 'down'): Item[] {
@@ -42,10 +42,10 @@ function Branch({ node }: { node: DepNode }) {
     <li>
       <span className="flex items-center gap-2 text-sm">
         <span className={`h-2 w-2 shrink-0 rounded-full ${dot[node.item.status]}`} />
-        <span className={done ? 'text-zinc-400 line-through' : ''}>{node.item.title}</span>
+        <span className={done ? 'text-sand-600 line-through dark:text-sand-500' : ''}>{node.item.title}</span>
       </span>
       {node.children.length > 0 && (
-        <ul className="ml-[3px] mt-1 space-y-1 border-l border-zinc-200 pl-4 dark:border-zinc-700">
+        <ul className="ml-[3px] mt-1 space-y-1 border-l border-ink/12 pl-4 dark:border-ink-inverse/15">
           {node.children.map((child) => (
             <Branch key={child.item.id} node={child} />
           ))}
@@ -72,7 +72,7 @@ function Direction({
   const tree = buildTree(roots, all, dir, visited)
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{heading}</h4>
+      <h4 className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">{heading}</h4>
       <ul className="mt-1 space-y-1">
         {tree.map((node) => (
           <Branch key={node.item.id} node={node} />
