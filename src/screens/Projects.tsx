@@ -244,7 +244,7 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
           <li key={item.id} className="py-2">
             <button
               type="button"
-              className="flex w-full items-center gap-2 text-left"
+              className="flex min-h-tap w-full items-center gap-2 text-left"
               onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
             >
               <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[item.status]}`} />

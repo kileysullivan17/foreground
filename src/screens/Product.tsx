@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useCreateStory, useStories, useUpdateStory } from '../hooks/useData'
 import { QueryStates } from '../components/QueryStates'
+import { Sheet } from '../components/Sheet'
 import { compareStories, storyWsjf } from '../scoring/wsjf'
 import { storyStatusLabels } from '../lib/format'
 import { requestGroomDraft } from '../lib/groomClient'
@@ -511,19 +512,8 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-20" role="dialog" aria-label="Story detail">
-      <button
-        type="button"
-        aria-label="Dismiss story detail"
-        onClick={onClose}
-        className="absolute inset-0 bg-ink/48"
-      />
-      <div className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-sheet bg-surface-raised px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sheet dark:bg-surface-dark">
-        <div className="mx-auto max-w-lg">
-          <div className="grid min-h-[26px] place-items-center pt-2.5">
-            <span className="h-[4.5px] w-11 rounded-pill bg-sand-400 dark:bg-sand-600" aria-hidden />
-          </div>
-          <div className="flex items-start gap-2.5">
+    <Sheet label="Story detail" onClose={onClose}>
+      <div className="flex items-start gap-2.5">
             {story.raw ? (
               <RawCaptureTag />
             ) : (
@@ -644,9 +634,7 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
               </div>
             </>
           )}
-        </div>
-      </div>
-    </div>
+    </Sheet>
   )
 }
 
@@ -742,7 +730,7 @@ export function Product() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => jumpTo(col.status)}
-                className={`inline-flex min-h-9 flex-none items-center gap-1.5 rounded-pill px-3.5 text-[12.5px] ${
+                className={`relative inline-flex min-h-9 flex-none items-center gap-1.5 rounded-pill px-3.5 text-[12.5px] before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
                   active
                     ? 'bg-ink font-semibold text-ink-inverse dark:bg-ink-inverse dark:text-ink'
                     : 'border border-ink/20 text-sand-800 hover:bg-ink/5 dark:border-ink-inverse/25 dark:text-sand-300 dark:hover:bg-ink-inverse/8'

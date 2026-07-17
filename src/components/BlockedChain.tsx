@@ -90,7 +90,7 @@ function ChainNode({
               <button
                 type="button"
                 onClick={() => onJump(entry.item.id)}
-                className="ml-auto min-h-8 text-xs font-semibold text-clay-700 hover:underline dark:text-clay-300"
+                className="relative ml-auto min-h-8 text-xs font-semibold text-clay-700 before:absolute before:-inset-x-2 before:-inset-y-1.5 before:content-[''] hover:underline dark:text-clay-300"
               >
                 ranked #{rank} →
               </button>

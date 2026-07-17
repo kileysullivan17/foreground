@@ -78,7 +78,7 @@ export default function App() {
       <div className="min-h-dvh bg-ground pb-24 font-body text-[15px] text-ink lg:pb-10 dark:bg-ground-dark dark:text-ink-inverse">
         <ScrollToTop />
         <header className="mx-auto flex max-w-lg items-center gap-2 px-5 pt-5 lg:max-w-[1060px] lg:gap-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2 lg:mr-auto">
+          <Link to="/" className="flex min-h-tap items-center gap-2 lg:mr-auto">
             <Logo />
             <span className="font-display text-[15px] lg:text-lg">Foreground</span>
           </Link>
@@ -89,7 +89,7 @@ export default function App() {
                 to={tab.to}
                 end={tab.to === '/'}
                 className={({ isActive }) =>
-                  `pb-0.5 text-[14px] ${
+                  `flex min-h-tap items-center text-[14px] ${
                     isActive
                       ? 'border-b-2 border-clay font-semibold text-clay-700 dark:border-clay-400 dark:text-clay-300'
                       : 'text-sand-800 hover:text-clay-700 dark:text-sand-300 dark:hover:text-clay-300'
@@ -101,7 +101,7 @@ export default function App() {
             ))}
             <Link
               to="/add"
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-pill bg-clay-500 px-[18px] font-display text-[14px] text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-pill bg-clay-500 px-[18px] font-display text-[14px] text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
                 <path d="M12 5v14" />
@@ -112,7 +112,7 @@ export default function App() {
           </nav>
           <Link
             to="/about"
-            className="ml-auto text-meta font-semibold text-sand-700 hover:text-clay-700 lg:ml-0 dark:text-sand-400 dark:hover:text-clay-300"
+            className="ml-auto inline-flex min-h-tap items-center text-meta font-semibold text-sand-700 hover:text-clay-700 lg:ml-0 dark:text-sand-400 dark:hover:text-clay-300"
           >
             About
           </Link>

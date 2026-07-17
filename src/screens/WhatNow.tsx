@@ -272,7 +272,7 @@ export function WhatNow() {
             type="button"
             aria-pressed={quickWins}
             onClick={() => setQuickWins((v) => !v)}
-            className={`inline-flex min-h-[38px] items-center gap-1.5 rounded-pill px-4 text-[13.5px] ${
+            className={`relative inline-flex min-h-[38px] items-center gap-1.5 rounded-pill px-4 text-[13.5px] before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
               quickWins
                 ? 'bg-clay-500 font-semibold text-ink dark:bg-clay-400'
                 : 'border border-ink/20 text-sand-800 hover:bg-ink/5 dark:border-ink-inverse/25 dark:text-sand-300 dark:hover:bg-ink-inverse/8'

@@ -316,6 +316,25 @@ hosted Supabase.
     dark load never flashes light. New small feature, logged here per the
     design brief.
 
+52. **F8 + F9: sheets are real dialogs and every target clears 44px.** A
+    shared `Sheet` component owns bottom-sheet behavior: it renders in a
+    portal, sets `aria-modal` with a label, moves focus to the first control
+    on open and returns it on close, closes on Escape and on the scrim, and
+    puts the app root under `inert` while open, which is also what keeps Tab
+    inside the dialog. The groom-draft editor layers its own Escape handler
+    in the capture phase, so Esc there discards the draft (keeping the raw
+    capture) without also closing the sheet; a second Esc closes it. The
+    reference also lists swipe-down dismiss; that needs a gesture library or
+    hand-rolled touch tracking, so it is deliberately not implemented and
+    the scrim, Esc, and the close button carry dismissal (F8). Every
+    interactive target now has at least a 44px hit area: controls that grew
+    honestly (nav links, list rows, editor rows) use `min-h-tap`, and the
+    38px filter chips and 36px board chips from the reference keep their
+    drawn size but extend an invisible `::before` hit area to 44px, so
+    density and reachability stop trading against each other (F9). With the
+    contrast pass in decision 50 (F10), that closes the redesign's three
+    audit findings.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).
