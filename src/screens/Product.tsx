@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCreateStory, useStories, useUpdateStory } from '../hooks/useData'
 import { QueryStates } from '../components/QueryStates'
 import { compareStories, storyWsjf } from '../scoring/wsjf'
@@ -118,7 +118,46 @@ function StoryCard({ story, onOpen }: { story: Story; onOpen: () => void }) {
   )
 }
 
-function StoryEditor({ story, onClose }: { story: Story; onClose: () => void }) {
+function DraftChip() {
+  return (
+    <span className="inline-flex rounded-pill bg-sage-200 px-2 py-px text-[10px] font-semibold uppercase tracking-[0.06em] text-sage-800 dark:bg-sage-800 dark:text-sage-200">
+      draft
+    </span>
+  )
+}
+
+function FieldLabel({ text, draft, right }: { text: string; draft: boolean; right?: string }) {
+  return (
+    <div className="mb-1.5 flex items-center gap-1.5">
+      <span className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
+        {text}
+      </span>
+      {draft && <DraftChip />}
+      {right && (
+        <span className="ml-auto text-[11.5px] font-semibold tabular-nums text-sand-700 dark:text-sand-400">
+          {right}
+        </span>
+      )}
+    </div>
+  )
+}
+
+// The 1f editor. In draft mode every field arrived from the grooming
+// assistant: sage chips mark them, the footer offers Accept / Re-draft,
+// and Esc discards the draft leaving the raw capture untouched.
+function StoryEditor({
+  story,
+  onClose,
+  draftMode = false,
+  onRedraft,
+  redrafting = false,
+}: {
+  story: Story
+  onClose: () => void
+  draftMode?: boolean
+  onRedraft?: () => void
+  redrafting?: boolean
+}) {
   const update = useUpdateStory()
   const [title, setTitle] = useState(story.title)
   const [description, setDescription] = useState(story.description)
@@ -126,15 +165,26 @@ function StoryEditor({ story, onClose }: { story: Story; onClose: () => void }) 
   const [timeCriticality, setTimeCriticality] = useState(story.timeCriticality)
   const [enablement, setEnablement] = useState(story.enablement)
   const [jobSize, setJobSize] = useState(story.jobSize)
-  const [criteria, setCriteria] = useState(story.acceptanceCriteria.map((c) => c.text).join('\n'))
+  const [criteria, setCriteria] = useState<string[]>(story.acceptanceCriteria.map((c) => c.text))
+
+  useEffect(() => {
+    if (!draftMode) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [draftMode, onClose])
 
   const areaCls = inputCls.replace('rounded-pill', 'rounded-ctl') + ' py-2.5'
+  const liveWsjf =
+    Math.round(((businessValue + timeCriticality + enablement) / jobSize) * 10) / 10
 
   const save = () => {
-    const texts = criteria
-      .split('\n')
-      .map((t) => t.trim())
-      .filter(Boolean)
+    const texts = criteria.map((t) => t.trim()).filter(Boolean)
     // Saving criteria into a raw capture is grooming it, whether the words
     // came from the assistant's draft or by hand: the raw flag clears and a
     // backlog story moves to Groomed.
@@ -162,75 +212,173 @@ function StoryEditor({ story, onClose }: { story: Story; onClose: () => void }) 
     )
   }
 
-  const scoreSelect = (label: string, value: number, set: (v: number) => void) => (
-    <label className="flex items-center justify-between gap-2 text-detail">
-      {label}
+  const pillSelect = (
+    label: string,
+    value: number,
+    set: (v: number) => void,
+    options: number[],
+    unit = '',
+  ) => (
+    <label className="flex min-h-tap items-center gap-2 rounded-pill border border-ink/15 bg-surface px-3.5 dark:border-ink-inverse/20 dark:bg-surface-dark-raised">
+      <span className="flex-none text-xs text-sand-700 dark:text-sand-400">{label}</span>
       <select
         value={value}
         onChange={(e) => set(Number(e.target.value))}
-        className={`${inputCls} w-auto`}
+        className="min-w-0 flex-1 appearance-none bg-transparent text-right text-[14px] font-semibold tabular-nums text-ink focus:outline-none dark:text-ink-inverse"
       >
-        {[1, 2, 3, 4, 5].map((v) => (
+        {options.map((v) => (
           <option key={v} value={v}>
             {v}
+            {unit && ` ${unit}`}
           </option>
         ))}
       </select>
+      <svg
+        className="flex-none text-sand-600 dark:text-sand-500"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        {...stroke}
+        aria-hidden
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
     </label>
   )
 
   return (
-    <div className="space-y-3">
+    <div>
+      <FieldLabel text="Title" draft={draftMode} />
       <textarea
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        rows={3}
-        className={areaCls}
+        rows={2}
+        className={`${areaCls} font-semibold`}
         aria-label="Story title"
         placeholder="As a [user], I want [capability] so that [outcome]"
       />
-      <textarea
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        rows={3}
-        className={areaCls}
-        aria-label="Description"
-        placeholder="Description"
-      />
-      <textarea
-        value={criteria}
-        onChange={(e) => setCriteria(e.target.value)}
-        rows={4}
-        className={areaCls}
-        aria-label="Acceptance criteria"
-        placeholder={'Acceptance criteria, one per line'}
-      />
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-        {scoreSelect('Value', businessValue, setBusinessValue)}
-        {scoreSelect('Urgency', timeCriticality, setTimeCriticality)}
-        {scoreSelect('Unblocks', enablement, setEnablement)}
-        <label className="flex items-center justify-between gap-2 text-detail">
-          Size
-          <select
-            value={jobSize}
-            onChange={(e) => setJobSize(Number(e.target.value))}
-            className={`${inputCls} w-auto`}
-          >
-            {[1, 2, 3, 5, 8].map((v) => (
-              <option key={v} value={v}>
-                {v} pt{v === 1 ? '' : 's'}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="mt-3.5">
+        <FieldLabel text="Description" draft={draftMode} />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          className={areaCls}
+          aria-label="Description"
+          placeholder="Description"
+        />
       </div>
-      <div className="flex gap-2">
-        <button type="button" onClick={save} disabled={update.isPending} className={clayBtn}>
-          Save
-        </button>
-        <button type="button" onClick={onClose} className={outlineBtn}>
-          Cancel
-        </button>
+      <div className="mt-3.5">
+        <FieldLabel
+          text="Acceptance criteria"
+          draft={draftMode}
+          right={`${
+            criteria.filter((t) => story.acceptanceCriteria.find((c) => c.text === t.trim())?.done)
+              .length
+          } / ${criteria.filter((t) => t.trim()).length}`}
+        />
+        <div className="flex flex-col">
+          {criteria.map((text, i) => (
+            <div key={i} className="flex min-h-tap items-center gap-3">
+              <span
+                className={`size-[22px] flex-none rounded-[7px] border-2 ${
+                  story.acceptanceCriteria.find((c) => c.text === text.trim())?.done
+                    ? 'border-sage-600 bg-sage-600 dark:border-sage-500 dark:bg-sage-500'
+                    : 'border-sand-500 bg-surface-raised dark:border-sand-600 dark:bg-surface-dark-raised'
+                }`}
+                aria-hidden
+              />
+              <input
+                value={text}
+                onChange={(e) =>
+                  setCriteria((prev) => prev.map((t, j) => (j === i ? e.target.value : t)))
+                }
+                aria-label={`Criterion ${i + 1}`}
+                className="min-w-0 flex-1 border-b border-transparent bg-transparent text-detail leading-[1.4] text-ink focus:border-ink/25 focus:outline-none dark:text-ink-inverse dark:focus:border-ink-inverse/30"
+              />
+              <button
+                type="button"
+                aria-label={`Remove criterion ${i + 1}`}
+                onClick={() => setCriteria((prev) => prev.filter((_, j) => j !== i))}
+                className="grid size-tap flex-none place-items-center rounded-pill text-sand-600 hover:bg-ink/6 dark:text-sand-500 dark:hover:bg-ink-inverse/8"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setCriteria((prev) => [...prev, ''])}
+            className="flex min-h-tap items-center gap-2 text-detail font-semibold text-clay-700 dark:text-clay-300"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
+              <path d="M12 5v14" />
+              <path d="M5 12h14" />
+            </svg>
+            Add a criterion
+          </button>
+        </div>
+      </div>
+      <div className="mt-2">
+        <FieldLabel text="WSJF inputs" draft={draftMode} />
+        <div className="grid grid-cols-2 gap-2">
+          {pillSelect('Value', businessValue, setBusinessValue, [1, 2, 3, 4, 5])}
+          {pillSelect('Urgency', timeCriticality, setTimeCriticality, [1, 2, 3, 4, 5])}
+          {pillSelect('Unblocks', enablement, setEnablement, [1, 2, 3, 4, 5])}
+          {pillSelect('Size', jobSize, setJobSize, [1, 2, 3, 5, 8], 'pts')}
+        </div>
+        <div className="mt-2.5 flex items-baseline gap-2.5 px-0.5">
+          <span className="text-meta tabular-nums text-sand-700 dark:text-sand-400">
+            ({businessValue} + {timeCriticality} + {enablement}) ÷ {jobSize}
+          </span>
+          <span className="ml-auto inline-flex items-center rounded-pill bg-clay-100 px-3 py-[3px] text-[12.5px] font-bold tabular-nums text-clay-800 dark:bg-clay-900 dark:text-clay-300">
+            WSJF {liveWsjf}
+          </span>
+        </div>
+      </div>
+      <div className="-mx-5 mt-3.5 border-t border-ink/12 px-5 pt-3 dark:border-ink-inverse/15">
+        {draftMode ? (
+          <>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onRedraft}
+                disabled={redrafting || update.isPending}
+                className={`${outlineBtn} flex-1`}
+              >
+                {redrafting ? 'Drafting…' : 'Re-draft'}
+              </button>
+              <button
+                type="button"
+                onClick={save}
+                disabled={update.isPending}
+                className={`${clayBtn} flex-[1.5]`}
+              >
+                Accept draft
+              </button>
+            </div>
+            <p className="pb-1 pt-2 text-center text-[11.5px] text-sand-700 dark:text-sand-400">
+              Esc discards the draft and keeps the raw capture
+            </p>
+          </>
+        ) : (
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className={`${outlineBtn} flex-1`}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={update.isPending}
+              className={`${clayBtn} flex-[1.5]`}
+            >
+              Save
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -323,6 +471,7 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
   const update = useUpdateStory()
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState<GroomDraft | null>(null)
+  const [draftSeq, setDraftSeq] = useState(0)
   const [drafting, setDrafting] = useState(false)
   const wsjf = storyWsjf(story)
 
@@ -330,6 +479,8 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
     setDrafting(true)
     try {
       setDraft(await requestGroomDraft(story.title))
+      // Remount the editor so a re-draft's values replace the edited ones.
+      setDraftSeq((n) => n + 1)
     } finally {
       setDrafting(false)
     }
@@ -394,16 +545,26 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
           </div>
 
           {draft && draftStory ? (
-            <div className="mt-3">
-              <p className="flex items-start gap-2 rounded-ctl bg-sage-100 px-3 py-2.5 text-meta leading-[1.45] text-sage-800 dark:bg-sage-900 dark:text-sage-200">
+            <div className="mt-1.5">
+              <h2 className="font-display text-[21px] text-ink dark:text-ink-inverse">
+                Groom this story
+              </h2>
+              <p className="mt-3 flex items-start gap-2 rounded-ctl bg-sage-100 px-3 py-2.5 text-meta leading-[1.45] text-sage-800 dark:bg-sage-900 dark:text-sage-200">
                 <SparkIcon />
                 <span>
-                  {draftSourceLabel[draft.source]} {draft.rationale} Nothing applies until you
-                  save.
+                  {draftSourceLabel[draft.source]} {draft.rationale} Nothing counts until you
+                  accept.
                 </span>
               </p>
-              <div className="mt-3">
-                <StoryEditor story={draftStory} onClose={() => setDraft(null)} />
+              <div className="mt-4">
+                <StoryEditor
+                  key={draftSeq}
+                  story={draftStory}
+                  onClose={() => setDraft(null)}
+                  draftMode
+                  onRedraft={groom}
+                  redrafting={drafting}
+                />
               </div>
             </div>
           ) : editing ? (
