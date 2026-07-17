@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { rankItems, type ScoredItem } from '../scoring/score'
 import { useItems, useProjects } from '../hooks/useData'
-import { Segmented } from '../components/Segmented'
+import { FilterChips } from '../components/FilterChips'
 import { StatusActions } from '../components/StatusActions'
 import { DependencyView } from '../components/DependencyView'
 import { QueryStates } from '../components/QueryStates'
+import { ScoreLedger } from '../components/ScoreLedger'
+import { teaserLine } from '../lib/scoreDisplay'
 import { effortLabels } from '../lib/format'
 import type { Area, Item, Project } from '../types'
 
@@ -12,14 +14,149 @@ type AreaFilter = 'all' | Area
 
 const NO_ITEMS: never[] = []
 
-const factorTone: Record<string, string> = {
-  deadline: 'text-red-700 dark:text-red-400',
-  importance: 'text-indigo-700 dark:text-indigo-400',
-  unblocks: 'text-amber-700 dark:text-amber-400',
-  momentum: 'text-sky-700 dark:text-sky-400',
+function Chevron({ open, className = '' }: { open?: boolean; className?: string }) {
+  return (
+    <svg
+      className={`${className} ${open ? 'rotate-180' : ''}`}
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  )
 }
 
-function ScoredCard({
+function InProgressTag() {
+  return (
+    <span className="inline-flex items-center rounded-pill bg-sage-200 px-2 py-0.5 text-micro font-semibold normal-case tracking-normal text-sage-800 dark:bg-sage-800 dark:text-sage-200">
+      in progress
+    </span>
+  )
+}
+
+const itemMeta = (item: Item, projects: Project[]) =>
+  `${projects.find((p) => p.id === item.projectId)?.name ?? 'No project'} · ${effortLabels[item.effort]}`
+
+// The one ink panel on screen: rank #1, ledger always open. Inverts with
+// the theme (ink on cream ground, cream on ink ground).
+function ForegroundCard({
+  scored,
+  total,
+  projects,
+}: {
+  scored: ScoredItem
+  total: number
+  projects: Project[]
+}) {
+  const { item } = scored
+  return (
+    <section
+      aria-label="In the foreground"
+      className="rounded-hero bg-ink p-5 shadow-lg lg:grid lg:grid-cols-[1fr_360px] lg:gap-[30px] lg:p-7 dark:bg-ink-inverse"
+    >
+      <div className="flex flex-col">
+        <div className="flex items-center gap-2">
+          <span className="text-micro font-semibold uppercase text-clay-300 dark:text-clay-700">
+            In the foreground
+          </span>
+          <span className="ml-auto text-[11.5px] font-semibold text-sand-500 lg:ml-0 dark:text-sand-700">
+            #1 of {total}
+          </span>
+        </div>
+        <h2 className="mt-2.5 font-display text-title text-ink-inverse lg:text-score-lg dark:text-ink">
+          {item.title}
+        </h2>
+        <p className="mt-1.5 flex items-center gap-2 text-detail text-sand-400 dark:text-sand-700">
+          {itemMeta(item, projects)}
+          {item.status === 'in_progress' && <InProgressTag />}
+        </p>
+        <div className="mt-auto hidden max-w-[420px] pt-[18px] lg:block">
+          <StatusActions item={item} context="foreground" />
+        </div>
+      </div>
+      <div className="mt-3.5 lg:mt-0">
+        <ScoreLedger scored={scored} context="foreground" size="lg" />
+      </div>
+      <div className="mt-3.5 lg:hidden">
+        <StatusActions item={item} context="foreground" />
+      </div>
+    </section>
+  )
+}
+
+// Queue cards keep their arithmetic behind a tap: a one-line teaser when
+// closed, the full ledger and actions when open.
+function QueueCard({
+  scored,
+  rank,
+  projects,
+  open,
+  onToggle,
+}: {
+  scored: ScoredItem
+  rank: number
+  projects: Project[]
+  open: boolean
+  onToggle: () => void
+}) {
+  const { item } = scored
+  return (
+    <li className="rounded-card bg-surface dark:bg-surface-dark">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className="w-full rounded-card px-[18px] py-4 text-left hover:shadow-md"
+      >
+        <span className="flex items-baseline gap-2.5">
+          <span className="inline-flex size-[22px] flex-none translate-y-[3px] items-center justify-center rounded-pill border-[1.5px] border-sand-500 text-[11.5px] font-semibold text-sand-700 dark:border-sand-600 dark:text-sand-400">
+            {rank}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-card text-ink dark:text-ink-inverse">{item.title}</span>
+            <span className="mt-[3px] flex items-center gap-2 text-[13px] text-sand-700 dark:text-sand-400">
+              {itemMeta(item, projects)}
+              {item.status === 'in_progress' && <InProgressTag />}
+            </span>
+          </span>
+          <span className="hidden max-w-72 truncate text-meta text-sand-700 lg:block dark:text-sand-400">
+            {!open && teaserLine(scored)}
+          </span>
+          <span className="font-display text-[19px] tabular-nums text-ink dark:text-ink-inverse">
+            {scored.score}
+          </span>
+          <Chevron open={open} className="hidden flex-none self-center text-sand-600 lg:block dark:text-sand-500" />
+        </span>
+        {!open && (
+          <span className="mt-[7px] ml-8 flex items-center gap-1.5 text-meta text-sand-700 lg:hidden dark:text-sand-400">
+            <span className="truncate">{teaserLine(scored)}</span>
+            <Chevron className="ml-auto flex-none text-sand-600 dark:text-sand-500" />
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="px-[18px] pb-4 lg:ml-8 lg:grid lg:grid-cols-[1fr_220px] lg:gap-[22px]">
+          <ScoreLedger scored={scored} context="card" />
+          <div className="mt-3 lg:mt-0 lg:flex lg:flex-col lg:justify-end">
+            <StatusActions item={item} context="card" className="lg:flex-col" />
+          </div>
+        </div>
+      )}
+    </li>
+  )
+}
+
+// Interim blocked card: surface card with the dependency chain in place of
+// the score. The full 1h treatment (timeline, rank link) lands with the
+// blocked-shelf pass.
+function BlockedCard({
   scored,
   projects,
   allItems,
@@ -28,63 +165,21 @@ function ScoredCard({
   projects: Project[]
   allItems: Item[]
 }) {
-  const { item, score, delayFactors, size, staleness, blockedBy } = scored
-  const project = projects.find((p) => p.id === item.projectId)
-  const blocked = blockedBy.length > 0
-
+  const { item } = scored
   return (
-    <li
-      className={`rounded-xl border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900 ${
-        blocked ? 'opacity-70' : ''
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-medium leading-snug">{item.title}</h3>
-          <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-            {project?.name ?? 'No project'} · {effortLabels[item.effort]}
-            {item.status === 'in_progress' && ' · in progress'}
-          </p>
-        </div>
-        {!blocked && (
-          <span
-            className="shrink-0 rounded-lg bg-zinc-100 px-2 py-1 text-sm font-semibold tabular-nums dark:bg-zinc-800"
-            title="Priority score"
-          >
-            {score}
-          </span>
-        )}
+    <li className="rounded-card bg-surface px-[18px] py-4 dark:bg-surface-dark">
+      <div className="flex items-baseline gap-2.5">
+        <span className="min-w-0 flex-1 text-card text-ink dark:text-ink-inverse">{item.title}</span>
+        <span className="inline-flex items-center gap-1.5 rounded-pill bg-sand-200 px-2.5 py-[3px] text-micro font-semibold normal-case tracking-normal text-sand-800 dark:bg-surface-dark-raised dark:text-sand-300">
+          blocked
+        </span>
       </div>
-
-      {blocked ? (
-        <div className="mt-2">
-          <DependencyView item={item} allItems={allItems} />
-        </div>
-      ) : (
-        <ul className="mt-2 space-y-0.5">
-          {delayFactors.map((f) => (
-            <li key={f.key} className={`text-sm ${factorTone[f.key] ?? ''}`}>
-              <span className="inline-block w-11 font-semibold tabular-nums">+{f.points}</span>
-              {f.label}
-            </li>
-          ))}
-          <li className="text-sm text-emerald-700 dark:text-emerald-400">
-            <span className="inline-block w-11 font-semibold tabular-nums">÷{size.divisor}</span>
-            {size.label}
-          </li>
-          {staleness && (
-            <li className="text-sm text-orange-700 dark:text-orange-400">
-              <span className="inline-block w-11 font-semibold tabular-nums">
-                ×{staleness.multiplier}
-              </span>
-              {staleness.label}
-            </li>
-          )}
-        </ul>
-      )}
-
+      <p className="mt-[3px] text-[13px] text-sand-700 dark:text-sand-400">{itemMeta(item, projects)}</p>
       <div className="mt-3">
-        <StatusActions item={item} />
+        <DependencyView item={item} allItems={allItems} />
+      </div>
+      <div className="mt-3">
+        <StatusActions item={item} context="card" />
       </div>
     </li>
   )
@@ -94,6 +189,7 @@ export function WhatNow() {
   const [area, setArea] = useState<AreaFilter>('all')
   const [quickWins, setQuickWins] = useState(false)
   const [showBlocked, setShowBlocked] = useState(false)
+  const [openId, setOpenId] = useState<string | null>(null)
   const itemsQuery = useItems()
   const projectsQuery = useProjects()
   const items = itemsQuery.data ?? NO_ITEMS
@@ -112,58 +208,106 @@ export function WhatNow() {
   const inArea = (s: ScoredItem) => area === 'all' || s.item.area === area
   const readyShown = ready.filter(inArea)
   const blockedShown = blocked.filter(inArea)
+  const [first, ...queue] = readyShown
 
   return (
-    <main className="mx-auto max-w-lg px-4 pt-4">
-      <h1 className="text-2xl font-bold">What now</h1>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Segmented
-          label="Area"
-          options={[
-            { value: 'all', label: 'All' },
-            { value: 'work', label: 'Work' },
-            { value: 'home', label: 'Home' },
-          ]}
-          value={area}
-          onChange={setArea}
-        />
-        <button
-          type="button"
-          aria-pressed={quickWins}
-          onClick={() => setQuickWins((v) => !v)}
-          className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-            quickWins
-              ? 'bg-emerald-600 text-white'
-              : 'bg-zinc-200/70 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-          }`}
-        >
-          ⚡ Quick wins
-        </button>
+    <main className="mx-auto max-w-lg px-3.5 pt-3 lg:max-w-[1060px] lg:px-8 lg:pt-4">
+      <div className="px-1.5 lg:flex lg:items-end lg:gap-4 lg:px-0">
+        <h1 className="font-display text-display lg:text-[38px] lg:leading-[1.1]">What now</h1>
+        <p className="hidden pb-1.5 text-detail text-sand-700 lg:block dark:text-sand-400">
+          ranked by the arithmetic, open any row to check it
+        </p>
+        <div className="mt-2 mb-4 flex flex-wrap items-center gap-1.5 lg:mt-0 lg:mb-1 lg:ml-auto">
+          <FilterChips
+            label="Area"
+            options={[
+              { value: 'all', label: 'All' },
+              { value: 'work', label: 'Work' },
+              { value: 'home', label: 'Home' },
+            ]}
+            value={area}
+            onChange={setArea}
+          />
+          <button
+            type="button"
+            aria-pressed={quickWins}
+            onClick={() => setQuickWins((v) => !v)}
+            className={`inline-flex min-h-[38px] items-center gap-1.5 rounded-pill px-4 text-[13.5px] ${
+              quickWins
+                ? 'bg-clay-500 font-semibold text-ink dark:bg-clay-400'
+                : 'border border-ink/20 text-sand-800 hover:bg-ink/5 dark:border-ink-inverse/25 dark:text-sand-300 dark:hover:bg-ink-inverse/8'
+            }`}
+          >
+            <svg
+              className={quickWins ? '' : 'text-clay-600 dark:text-clay-400'}
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />
+            </svg>
+            Quick wins
+          </button>
+        </div>
       </div>
 
       <QueryStates queries={[itemsQuery, projectsQuery]}>
-        <ul className="mt-4 space-y-3">
-          {readyShown.map((s) => (
-            <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
-          ))}
-          {readyShown.length === 0 && (
-            <p className="py-8 text-center text-zinc-500">Nothing workable here. Add something?</p>
-          )}
-        </ul>
+        {first ? (
+          <>
+            <ForegroundCard scored={first} total={readyShown.length} projects={projects} />
+            <ul className="mt-3.5 space-y-2.5">
+              {queue.map((s, i) => (
+                <QueueCard
+                  key={s.item.id}
+                  scored={s}
+                  rank={i + 2}
+                  projects={projects}
+                  open={openId === s.item.id}
+                  onToggle={() => setOpenId(openId === s.item.id ? null : s.item.id)}
+                />
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="py-8 text-center text-sand-700 dark:text-sand-400">
+            Nothing workable here. Add something?
+          </p>
+        )}
 
         {blockedShown.length > 0 && (
-          <section className="mt-6 pb-4">
+          <section className="mt-4 pb-4">
             <button
               type="button"
-              className="text-sm font-medium text-zinc-500 dark:text-zinc-400"
+              aria-expanded={showBlocked}
               onClick={() => setShowBlocked((v) => !v)}
+              className="flex min-h-tap w-full items-center gap-2 rounded-pill border-[1.5px] border-dashed border-ink/22 px-[18px] text-[13px] text-sand-700 hover:bg-ink/4 dark:border-ink-inverse/25 dark:text-sand-400 dark:hover:bg-ink-inverse/6"
             >
-              {showBlocked ? '▾' : '▸'} Blocked ({blockedShown.length}): waiting on other items
+              <svg
+                className={`flex-none text-sand-600 dark:text-sand-500 ${showBlocked ? 'rotate-90' : ''}`}
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+              Blocked ({blockedShown.length}): waiting on other items
             </button>
             {showBlocked && (
-              <ul className="mt-3 space-y-3">
+              <ul className="mt-3 space-y-2.5">
                 {blockedShown.map((s) => (
-                  <ScoredCard key={s.item.id} scored={s} projects={projects} allItems={items} />
+                  <BlockedCard key={s.item.id} scored={s} projects={projects} allItems={items} />
                 ))}
               </ul>
             )}
