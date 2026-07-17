@@ -3,7 +3,7 @@ import { rankItems, type ScoredItem } from '../scoring/score'
 import { useItems, useProjects } from '../hooks/useData'
 import { FilterChips } from '../components/FilterChips'
 import { StatusActions } from '../components/StatusActions'
-import { DependencyView } from '../components/DependencyView'
+import { BlockedChain, BlockedTag } from '../components/BlockedChain'
 import { QueryStates } from '../components/QueryStates'
 import { ScoreLedger } from '../components/ScoreLedger'
 import { teaserLine } from '../lib/scoreDisplay'
@@ -58,6 +58,7 @@ function ForegroundCard({
   const { item } = scored
   return (
     <section
+      id={`ranked-${item.id}`}
       aria-label="In the foreground"
       className="rounded-hero bg-ink p-5 shadow-lg lg:grid lg:grid-cols-[1fr_360px] lg:gap-[30px] lg:p-7 dark:bg-ink-inverse"
     >
@@ -108,7 +109,7 @@ function QueueCard({
 }) {
   const { item } = scored
   return (
-    <li className="rounded-card bg-surface dark:bg-surface-dark">
+    <li id={`ranked-${item.id}`} className="rounded-card bg-surface dark:bg-surface-dark">
       <button
         type="button"
         aria-expanded={open}
@@ -153,34 +154,61 @@ function QueueCard({
   )
 }
 
-// Interim blocked card: surface card with the dependency chain in place of
-// the score. The full 1h treatment (timeline, rank link) lands with the
-// blocked-shelf pass.
+// A blocked card per 1h: the dependency chain replaces the score. Closed,
+// it is one quiet row; open, "Waits on" walks to the actionable root
+// (which links back into the ranking) and "Would unblock" lists what its
+// completion would feed.
 function BlockedCard({
   scored,
   projects,
   allItems,
+  ranks,
+  onJump,
+  open,
+  onToggle,
 }: {
   scored: ScoredItem
   projects: Project[]
   allItems: Item[]
+  ranks: Map<string, number>
+  onJump: (id: string) => void
+  open: boolean
+  onToggle: () => void
 }) {
   const { item } = scored
   return (
-    <li className="rounded-card bg-surface px-[18px] py-4 dark:bg-surface-dark">
-      <div className="flex items-baseline gap-2.5">
-        <span className="min-w-0 flex-1 text-card text-ink dark:text-ink-inverse">{item.title}</span>
-        <span className="inline-flex items-center gap-1.5 rounded-pill bg-sand-200 px-2.5 py-[3px] text-micro font-semibold normal-case tracking-normal text-sand-800 dark:bg-surface-dark-raised dark:text-sand-300">
-          blocked
+    <li className="rounded-card bg-surface dark:bg-surface-dark">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={onToggle}
+        className="w-full rounded-card px-[18px] py-3.5 text-left hover:shadow-md"
+      >
+        <span className="flex items-center gap-2.5">
+          <span className="min-w-0 flex-1 text-[15px] font-semibold text-ink dark:text-ink-inverse">
+            {item.title}
+          </span>
+          {!open && (
+            <span className="flex-none text-meta text-sand-700 dark:text-sand-400">
+              waits on {scored.blockedBy.length}
+            </span>
+          )}
+          <BlockedTag />
         </span>
-      </div>
-      <p className="mt-[3px] text-[13px] text-sand-700 dark:text-sand-400">{itemMeta(item, projects)}</p>
-      <div className="mt-3">
-        <DependencyView item={item} allItems={allItems} />
-      </div>
-      <div className="mt-3">
-        <StatusActions item={item} context="card" />
-      </div>
+        {open && (
+          <span className="mt-[3px] block text-[13px] text-sand-700 dark:text-sand-400">
+            {itemMeta(item, projects)}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="px-[18px] pb-4">
+          <BlockedChain item={item} allItems={allItems} ranks={ranks} onJump={onJump} />
+          <div className="mt-3.5">
+            <StatusActions item={item} context="card" />
+          </div>
+        </div>
+      )}
     </li>
   )
 }
@@ -190,6 +218,7 @@ export function WhatNow() {
   const [quickWins, setQuickWins] = useState(false)
   const [showBlocked, setShowBlocked] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [openBlockedId, setOpenBlockedId] = useState<string | null>(null)
   const itemsQuery = useItems()
   const projectsQuery = useProjects()
   const items = itemsQuery.data ?? NO_ITEMS
@@ -209,6 +238,16 @@ export function WhatNow() {
   const readyShown = ready.filter(inArea)
   const blockedShown = blocked.filter(inArea)
   const [first, ...queue] = readyShown
+  const ranks = new Map(readyShown.map((s, i) => [s.item.id, i + 1]))
+
+  // "ranked #N →" on a blocked card's actionable root: open that card in
+  // the queue and bring it into view.
+  const jumpToRanked = (id: string) => {
+    if ((ranks.get(id) ?? 1) > 1) setOpenId(id)
+    requestAnimationFrame(() =>
+      document.getElementById(`ranked-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }),
+    )
+  }
 
   return (
     <main className="mx-auto max-w-lg px-3.5 pt-3 lg:max-w-[1060px] lg:px-8 lg:pt-4">
@@ -307,7 +346,16 @@ export function WhatNow() {
             {showBlocked && (
               <ul className="mt-3 space-y-2.5">
                 {blockedShown.map((s) => (
-                  <BlockedCard key={s.item.id} scored={s} projects={projects} allItems={items} />
+                  <BlockedCard
+                    key={s.item.id}
+                    scored={s}
+                    projects={projects}
+                    allItems={items}
+                    ranks={ranks}
+                    onJump={jumpToRanked}
+                    open={openBlockedId === s.item.id}
+                    onToggle={() => setOpenBlockedId(openBlockedId === s.item.id ? null : s.item.id)}
+                  />
                 ))}
               </ul>
             )}
