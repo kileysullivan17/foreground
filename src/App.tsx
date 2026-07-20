@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { WhatNow } from './screens/WhatNow'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { ThemeToggle } from './components/ThemeToggle'
 import { PutOff } from './screens/PutOff'
 import { Projects } from './screens/Projects'
@@ -66,15 +67,30 @@ function Logo() {
   )
 }
 
+// Screen crashes stay inside the routed area: the boundary is keyed by
+// route, so switching tabs mounts a fresh subtree instead of a stuck
+// fallback, and the header and nav above it keep working.
+function RouteBoundary({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation()
+  return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => window.scrollTo(0, 0), [pathname])
+  // Braced body on purpose: an effect's return value becomes its cleanup,
+  // and React calls any non-undefined cleanup as a function. Browser
+  // extensions patch window.scrollTo to return values, which white-screened
+  // production on the first navigation. Never return a call's result here.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
   return null
 }
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
       <div className="min-h-dvh bg-ground pb-24 font-body text-[15px] text-ink lg:pb-10 dark:bg-ground-dark dark:text-ink-inverse">
         <ScrollToTop />
         <header className="mx-auto flex max-w-lg items-center gap-2 px-5 pt-5 lg:max-w-[1060px] lg:gap-6 lg:px-8">
@@ -118,14 +134,16 @@ export default function App() {
           </Link>
           <ThemeToggle />
         </header>
-        <Routes>
-          <Route path="/" element={<WhatNow />} />
-          <Route path="/put-off" element={<PutOff />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/product" element={<Product />} />
-          <Route path="/add" element={<AddItem />} />
-          <Route path="/about" element={<About />} />
-        </Routes>
+        <RouteBoundary>
+          <Routes>
+            <Route path="/" element={<WhatNow />} />
+            <Route path="/put-off" element={<PutOff />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/product" element={<Product />} />
+            <Route path="/add" element={<AddItem />} />
+            <Route path="/about" element={<About />} />
+          </Routes>
+        </RouteBoundary>
 
         <nav
           aria-label="Primary"
@@ -167,6 +185,7 @@ export default function App() {
           </div>
         </nav>
       </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }

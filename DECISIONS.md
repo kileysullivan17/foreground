@@ -335,6 +335,47 @@ hosted Supabase.
     contrast pass in decision 50 (F10), that closes the redesign's three
     audit findings.
 
+## v2.2.1: the production white screen
+
+53. **The first navigation could white-screen the whole app; the cause was
+    one unbraced arrow.** `ScrollToTop` had
+    `useEffect(() => window.scrollTo(0, 0), [pathname])`: an expression-body
+    arrow returns its expression, and an effect's return value becomes its
+    cleanup. React only ignores a cleanup of exactly `undefined`; anything
+    else gets called as a function on the next effect cycle. In browsers
+    where an extension or injected script patches `window.scrollTo` to
+    return a value, the first route change (reported as "clicking Product")
+    made React call that value: `TypeError: n is not a function` inside
+    React's own commit internals, the tree unmounted, white page until
+    reload. Reproduced exactly against the deployed production bundle by
+    stubbing `scrollTo` to return `true`, matching the reported minified
+    stack frame for frame. Fixed by bracing the effect body, with a comment
+    saying why the braces are load-bearing. The regression test stubs
+    `scrollTo` the same hostile way, mounts the real App over the seeded
+    data shape, and navigates.
+
+54. **Every screen now renders inside an error boundary (the crash
+    report's F8).** There was none anywhere, so any render or commit crash
+    unmounted the root with nothing to catch it. Two now exist: an outer
+    one around the whole app, and a route-keyed one around the screens, so
+    a crashed screen degrades to a calm card (same anatomy as the query
+    error state) while the header and tabs keep working, and switching
+    tabs retries with a fresh subtree. A test mounts a throwing child and
+    asserts the fallback renders.
+
+55. **Live grooming never actually ran in production; the function died on
+    an extensionless import.** `api/groom.ts` imported
+    `../src/lib/groomDraft` without an extension; deployed under
+    `"type": "module"` the function runs as node ESM, which refuses
+    extensionless relative specifiers, so every call 500'd
+    (ERR_MODULE_NOT_FOUND in the runtime logs) and the client quietly
+    served its local stub, labeled as if the model was never wired. The
+    import now carries the `.js` extension Vercel's builder maps back to
+    the TypeScript source. Relatedly, the client's fallback after a failed
+    deployed call is now labeled 'stub-fallback' ("the model call failed")
+    instead of 'stub' ("not wired yet"), which is the distinction the UI
+    copy already promised.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).
