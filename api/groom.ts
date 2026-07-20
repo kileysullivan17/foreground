@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
-import { draftStoryHeuristic, groomDraftContentSchema } from '../src/lib/groomDraft'
+// The .js extension is required: with "type": "module" the deployed
+// function runs as node ESM, where extensionless relative imports fail at
+// runtime (ERR_MODULE_NOT_FOUND took the live grooming path down; the
+// client quietly fell back to the stub). Vercel's builder maps the .js
+// specifier back to the .ts source when compiling.
+import { draftStoryHeuristic, groomDraftContentSchema } from '../src/lib/groomDraft.js'
 
 // Grooming proxy. The Anthropic call is gated behind two Vercel env vars,
 // GROOM_LLM=live and ANTHROPIC_API_KEY; with either missing the endpoint

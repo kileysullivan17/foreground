@@ -29,7 +29,10 @@ export async function requestGroomDraft(rawTitle: string): Promise<GroomDraft> {
       if (parsed.success) return parsed.data
     }
   } catch {
-    // no serverless runtime here; fall through to the local stub
+    // fall through to the labeled local fallback
   }
-  return draftStoryHeuristic(rawTitle)
+  // A deployed call was attempted and failed (non-OK status, malformed body,
+  // or no serverless runtime at all). Label it as a failure, not as
+  // "not wired": the UI copy promises that distinction.
+  return { ...draftStoryHeuristic(rawTitle), source: 'stub-fallback' }
 }
