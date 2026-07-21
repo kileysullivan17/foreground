@@ -5,6 +5,11 @@ import './index.css'
 import App from './App'
 import { Toaster } from './components/Toaster'
 import { pushToast } from './lib/toast'
+import { installGlobalErrorReporting } from './lib/reportError'
+
+// Catch errors that escape React (event handlers, async callbacks, effect
+// teardown, extension-injected code) and post them to the log drain.
+installGlobalErrorReporting()
 
 // Any mutation that errors surfaces a toast with a Retry, so a failed save is
 // never silent. Retry re-runs the same mutation with its original variables;

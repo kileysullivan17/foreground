@@ -1,0 +1,27 @@
+name: CI
+
+# Gate every push and PR before it can reach production. Vercel auto-deploys
+# main on push, so this runs the same checks a human would: typecheck (app +
+# serverless api), lint, and the test suite. It would have caught the
+# scrollTo white-screen regression (a test now covers it); it would NOT have
+# caught the api ESM import bug (a runtime resolution issue, not a type
+# error), which is why that fix was verified against the live function.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build # tsc -b + api typecheck + vite build
+      - run: npm run lint
+      - run: npm test

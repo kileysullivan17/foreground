@@ -1,4 +1,5 @@
-import { Component, type ReactNode } from 'react'
+import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { reportError } from '../lib/reportError'
 
 // Render-error backstop. Without one, any render crash unmounts the whole
 // root: a white page with nothing to do but guess at a refresh. This
@@ -21,9 +22,16 @@ export class ErrorBoundary extends Component<Props, State> {
     return { error }
   }
 
-  componentDidCatch(error: Error) {
-    // Server-side telemetry does not exist here; the console is the trail.
+  componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Screen crashed:', error)
+    // Send it up so a crash in the wild shows in the Vercel logs, not just
+    // as a fallback card the user never reports.
+    reportError({
+      kind: 'boundary',
+      message: error.message,
+      stack: error.stack,
+      componentStack: info.componentStack ?? undefined,
+    })
   }
 
   render() {
