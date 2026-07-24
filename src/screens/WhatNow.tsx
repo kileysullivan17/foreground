@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { rankItems, type ScoredItem } from '../scoring/score'
 import { useItems, useProjects } from '../hooks/useData'
 import { FilterChips } from '../components/FilterChips'
@@ -14,6 +15,49 @@ import type { Area, Item, Project } from '../types'
 type AreaFilter = 'all' | Area
 
 const NO_ITEMS: never[] = []
+
+// One-time orientation for a first-time visitor landing on the demo. Dismissal
+// persists per browser, so a returning or daily user never sees it twice; each
+// fresh visitor (the app is local-first, one seeded copy per browser) sees it
+// once. Rendered above the ranking so it shows before any data query resolves.
+const DEMO_INTRO_KEY = 'fg-demo-intro-v1'
+
+function DemoIntro() {
+  const [dismissed, setDismissed] = useState(
+    () => typeof localStorage !== 'undefined' && localStorage.getItem(DEMO_INTRO_KEY) === '1',
+  )
+  if (dismissed) return null
+  const dismiss = () => {
+    try {
+      localStorage.setItem(DEMO_INTRO_KEY, '1')
+    } catch {
+      // private-mode storage failure is harmless; just hide it for the session
+    }
+    setDismissed(true)
+  }
+  return (
+    <div className="mb-4 flex items-start gap-3 rounded-card bg-clay-100 px-4 py-3 dark:bg-surface-dark-raised">
+      <p className="min-w-0 flex-1 text-[13px] leading-[1.5] text-sand-800 dark:text-sand-300">
+        You're in a live demo of Foreground. Every item is editable sample data, ranked by a Weighted
+        Shortest Job First (WSJF) score that also surfaces work you keep putting off.{' '}
+        <Link to="/about" className="font-semibold whitespace-nowrap text-clay-700 underline dark:text-clay-300">
+          How it works →
+        </Link>
+      </p>
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss demo intro"
+        className="-mr-1.5 -mt-1 grid size-tap flex-none place-items-center rounded-pill text-sand-700 hover:bg-ink/6 dark:text-sand-400 dark:hover:bg-ink-inverse/8"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    </div>
+  )
+}
 
 function Chevron({ open, className = '' }: { open?: boolean; className?: string }) {
   return (
@@ -252,6 +296,7 @@ export function WhatNow() {
 
   return (
     <main className="mx-auto max-w-lg px-3.5 pt-3 lg:max-w-[1060px] lg:px-8 lg:pt-4">
+      <DemoIntro />
       <div className="px-1.5 lg:flex lg:items-end lg:gap-4 lg:px-0">
         <h1 className="font-display text-display lg:text-[38px] lg:leading-[1.1]">What now</h1>
         <p className="hidden pb-1.5 text-detail text-sand-700 lg:block dark:text-sand-400">

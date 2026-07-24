@@ -1,39 +1,74 @@
-// Case study copy as a screen: what Foreground is, how it ranks, how it was
-// built. Reachable from the wordmark header anywhere in the app.
+// Case study and guided walkthrough as a screen: what Foreground is, how each
+// surface works, and how it was built. Reachable from the wordmark header
+// anywhere in the app. Written for a first-time visitor, a product or hiring
+// manager included.
 
 export function About() {
   return (
-    <main className="mx-auto max-w-lg px-5 pb-4 pt-3">
+    <main className="mx-auto max-w-lg px-5 pb-8 pt-3">
       <h1 className="font-display text-display">About Foreground</h1>
 
       <section className="mt-4 space-y-4 text-detail leading-relaxed text-sand-800 dark:text-sand-300">
         <p>
-          Foreground is a personal prioritization tool: one place for every open project and task
-          across work and home, built to answer a single question on demand. What should I work on
-          right now? Its point of view is in the name: the app decides what belongs in the
-          foreground of your attention, and it treats the work you keep putting off as a
-          first-class signal instead of letting it rot quietly at the bottom of a list.
+          Foreground is a personal prioritization tool. It holds every open project and task across
+          work and home in one place and answers one question on demand: what should I work on right
+          now? The name is the point of view. The app decides what belongs in the foreground of your
+          attention, and it treats the work you keep putting off as a real signal instead of letting
+          it sink quietly to the bottom of a list.
+        </p>
+        <p className="rounded-ctl bg-clay-100 px-3.5 py-3 text-sand-800 dark:bg-surface-dark-raised dark:text-sand-300">
+          Everything on this site is a live, interactive demo. The data is sample data seeded into
+          your browser, so you can rank, edit, complete, and import freely without touching anything
+          real or anyone else's copy.
         </p>
 
         <p>
-          Ranking uses WSJF (Weighted Shortest Job First), adapted for one person: cost of delay
-          (deadline urgency, declared importance, how much other work an item unblocks, and a small
-          momentum nudge for started work) divided by job size, then multiplied by a staleness
-          boost that grows the longer an item goes untouched. Every ranked card shows its full
-          arithmetic in plain language, so a surprising rank is always either trustworthy or fixable at the
-          input. The same model runs at backlog zoom in the Product tab, where this app's own
-          roadmap lives as user stories with acceptance criteria on a kanban board, groomed with an
-          LLM assistant that proposes and never applies. The full model, with every weight and its
-          rationale, is documented in FRAMEWORK.md in the repository.
+          <span className="font-semibold text-ink dark:text-ink-inverse">How it ranks (What now).</span>{' '}
+          The home screen orders your open work by a Weighted Shortest Job First (WSJF) score,
+          adapted for one person. Cost of delay comes from deadline urgency, the importance you set,
+          how much other work an item unblocks, and a small momentum nudge for anything already
+          started. That divides by job size, then multiplies by a staleness boost that grows the
+          longer an item goes untouched. Every card opens to show its full arithmetic in plain
+          language, so a surprising rank is either trustworthy on inspection or fixable at the input.
+          One item sits in the foreground; the rest queue below it, and anything blocked by
+          unfinished work waits in its own section with the chain that is holding it up.
         </p>
 
         <p>
-          Built mobile-first with React 18, strict TypeScript, Tailwind, and TanStack Query over a
-          swappable data layer: localStorage with seeded demo data by default, Supabase when
-          configured. The app has managed its own development since the v2 build began; the Product
-          backlog you can browse here is the real one. Every judgment call made during the build is
-          logged with its rationale in DECISIONS.md, the scoring engine is unit tested, and each
-          release is verified by driving the real UI in a headless browser. Built with Claude Code.
+          <span className="font-semibold text-ink dark:text-ink-inverse">What you keep avoiding (Put off).</span>{' '}
+          A second view sorts by staleness alone, stalest first, so slow-moving work surfaces rather
+          than hides. Logging a one-line note about where a thing stands resets its clock and records
+          where you left it. Treating staleness as a first-class input is the piece most
+          prioritization tools skip, and it is this one's differentiator.
+        </p>
+
+        <p>
+          <span className="font-semibold text-ink dark:text-ink-inverse">Projects.</span> Work and
+          home projects group their items under a goal and an optional target date. Items can depend
+          on each other, and the ranking reads those dependencies, so a blocked item never tops the
+          list and whatever would unblock the most earns its place.
+        </p>
+
+        <p>
+          <span className="font-semibold text-ink dark:text-ink-inverse">The product board (Product).</span>{' '}
+          This is where a product reviewer can inspect the practice instead of taking it on faith.
+          The app manages its own roadmap as a groomed backlog on a kanban board: user-story tickets
+          in standard form, each with acceptance criteria, an effort estimate in story points, and
+          its own WSJF score, moving across Backlog, Groomed, In progress, and Done. A Later shelf
+          holds candidates that are out of the math for now. A raw capture can be groomed by an LLM
+          assistant that drafts a story with proposed criteria and proposed scores for review; it
+          proposes and never applies, so nothing counts until you accept it. The same accept-gate
+          governs bulk import, which turns a pasted list into many reviewed items in one pass.
+        </p>
+
+        <p>
+          <span className="font-semibold text-ink dark:text-ink-inverse">How it is built.</span>{' '}
+          Foreground is mobile-first React with strict TypeScript, styled with Tailwind and served
+          over a swappable data layer that runs on browser storage by default and Supabase when
+          configured. The scoring engine is unit tested, every release is verified by driving the
+          real interface in a headless browser, and each judgment call from the build is written down
+          with its reasoning in DECISIONS.md. The full scoring model, with every weight and why it
+          holds the value it does, is in FRAMEWORK.md. Built with Claude Code.
         </p>
       </section>
     </main>
