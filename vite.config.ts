@@ -8,6 +8,8 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   test: {
     environment: 'node',
-    include: ['src/**/*.test.{ts,tsx}'],
+    // api/ holds the serverless handler; its test drives the live-AI branch
+    // with the Anthropic SDK mocked. Kept out of the api tsc build below.
+    include: ['src/**/*.test.{ts,tsx}', 'api/**/*.test.ts'],
   },
 })

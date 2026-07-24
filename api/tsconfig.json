@@ -9,5 +9,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["./**/*.ts", "../src/lib/groomDraft.ts", "../src/lib/importDraft.ts"]
+  "include": ["./**/*.ts", "../src/lib/groomDraft.ts", "../src/lib/importDraft.ts"],
+  "exclude": ["**/*.test.ts"]
 }

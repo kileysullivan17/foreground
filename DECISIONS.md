@@ -428,6 +428,23 @@ hosted Supabase.
     reviewed rows and routes; the AI path degrades to a labeled local parse
     offline).
 
+61. **The live AI path is tested with the model mocked, not just the offline
+    stub.** Two suites close the gap the first pass left open. `api/groom.test.ts`
+    mocks the Anthropic SDK and drives the import branch end to end: a valid
+    model response returns `source: 'llm'` with the items validated and an
+    explicit ISO deadline passed through; a model deadline that is not a plain
+    `yyyy-mm-dd` (or an out-of-range importance) is rejected by the Zod backstop
+    and falls to `stub-fallback`, so malformed or invented output can never
+    reach the client; a thrown SDK call, a missing key, an off switch, empty or
+    oversize text, and the secret gate all behave. `src/lib/importClient.test.ts`
+    forces `import.meta.env.DEV` off to exercise the deployed fetch branch: an
+    `llm` body maps to AI-origin rows with deadlines intact and sends
+    `mode: 'import'` with the paste capped and the cost-gate secret header, while
+    a 401, a 429, a network throw, a not-wired stub, and a malformed body each
+    degrade to a labeled local parse. The api test lives under `api/` (the app
+    tsconfig has no node types) and is wired into vitest's include but excluded
+    from the api tsc build.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).
