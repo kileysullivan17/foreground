@@ -463,6 +463,25 @@ hosted Supabase.
     current and fills the board's previously empty In progress column. A test
     covers the banner (shows once, stays dismissed).
 
+## v2.5: interactive guided tour
+
+63. **The walkthrough got an interactive form, built without a tour library.**
+    A dependency-free `Tour` component spotlights a real element (a box-shadow
+    cutout dims everything else) and floats a step card beside it. Steps target
+    live selectors rather than duplicating any UI, so the tour points at the
+    real interface; a missing target degrades to a centered card instead of
+    breaking. Five steps, tuned for a product or hiring-manager visitor, run on
+    What Now (the foreground pick, the score ledger where the acronym is spelled
+    out, Quick wins, and the ranked queue) and the last card hands off to the
+    product board on request. It is opt-in: `TourProvider` renders nothing until
+    a visitor clicks Take the tour on the demo banner or the About screen, so
+    the default tree and every test that does not start it are untouched, and
+    `useTour` has a no-op default so a screen rendered without the provider (a
+    unit test) does not throw. The card flips above or below the target by which
+    half of the viewport the target sits in, so the spotlight is never covered.
+    A test covers start, step forward and back, the board hand-off, and close on
+    Skip or Finish.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

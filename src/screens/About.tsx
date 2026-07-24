@@ -3,10 +3,35 @@
 // anywhere in the app. Written for a first-time visitor, a product or hiring
 // manager included.
 
+import { useNavigate } from 'react-router-dom'
+import { useTour } from '../components/Tour'
+
 export function About() {
+  const navigate = useNavigate()
+  const { startTour } = useTour()
+
+  // The spotlight targets live on What Now, so route there first, then start.
+  const takeTour = () => {
+    navigate('/')
+    startTour()
+  }
+
   return (
     <main className="mx-auto max-w-lg px-5 pb-8 pt-3">
-      <h1 className="font-display text-display">About Foreground</h1>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h1 className="font-display text-display">About Foreground</h1>
+        <button
+          type="button"
+          onClick={takeTour}
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-pill bg-clay-500 px-3.5 text-[12.5px] font-semibold text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M5 12h14" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+          Take the tour
+        </button>
+      </div>
 
       <section className="mt-4 space-y-4 text-detail leading-relaxed text-sand-800 dark:text-sand-300">
         <p>
