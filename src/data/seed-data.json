@@ -113,6 +113,19 @@
       "status": "done", "raw": false, "createdDaysAgo": 1
     },
     {
+      "key": "story-bulk-import",
+      "title": "As a backlog owner, I want to paste a messy list and turn it into many reviewed items at once so that capture keeps up with a real backlog instead of one item at a time.",
+      "description": "An Import screen parses a pasted list locally (bullets, numbers, headers) and can structure it with the LLM assistant into a per-item title, area, effort, importance, and a deadline only when the text states one. A mandatory review step is the accept gate; nothing saves until it is confirmed. Reuses the gated grooming endpoint rather than opening a second one.",
+      "acceptanceCriteria": [
+        { "text": "Local parse splits lines, strips bullets and numbers, and drops headers, fully offline", "done": true },
+        { "text": "AI structuring reuses the gated groom endpoint and never invents a deadline", "done": true },
+        { "text": "A mandatory review step edits every field before anything is saved", "done": true },
+        { "text": "Save creates all included items in one pass and ranks them immediately", "done": false }
+      ],
+      "businessValue": 4, "timeCriticality": 3, "enablement": 3, "jobSize": 3,
+      "status": "in_progress", "raw": false, "createdDaysAgo": 0
+    },
+    {
       "key": "story-live-groom-api",
       "title": "As the builder, I want the grooming proxy wired to the live Anthropic API in a supervised session so that drafts get model quality without a key ever entering the repo.",
       "description": "The serverless function and UI are complete and stubbed. Remaining work is Vercel env configuration and a supervised smoke test.",

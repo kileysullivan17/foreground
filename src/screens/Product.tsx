@@ -709,8 +709,9 @@ export function Product() {
       <div className="mx-auto max-w-lg px-5">
         <h1 className="font-display text-display">Product</h1>
         <p className="mt-1 text-[13px] leading-[1.5] text-sand-700 dark:text-sand-400">
-          The app's own backlog, managed in the open: user stories, acceptance criteria, and WSJF
-          scores. Tap a card to read, move, or groom it.
+          The app's own roadmap, managed in the open as a kanban board of user-story tickets, each
+          with acceptance criteria and a Weighted Shortest Job First (WSJF) score. Tap a card to read
+          it or move it between columns; raw captures can be groomed into a full story.
         </p>
       </div>
 

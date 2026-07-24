@@ -445,6 +445,24 @@ hosted Supabase.
     tsconfig has no node types) and is wired into vitest's include but excluded
     from the api tsc build.
 
+## v2.4: portfolio demo pass
+
+62. **The deployed site is already a per-visitor demo, so the work was
+    orientation, not isolation.** Production runs the local-first adapter with
+    no Supabase configured (confirmed by inspecting the deployed bundle: zero
+    `supabase.co` references, the seed baked in), so every visitor gets their
+    own seeded copy in their browser and no one sees anyone else's data. What
+    was missing was a way for a first-time visitor, a product or hiring manager
+    included, to understand what they are looking at. Added a dismissible
+    live-demo banner on What Now (persisted per browser so a returning or daily
+    user never sees it twice) that links to the walkthrough, rewrote About into
+    a guided walkthrough of each surface, and expanded the Product intro. The
+    acronym is spelled out in full, "Weighted Shortest Job First (WSJF)", on the
+    first use on each page, then shortened. The seed gained an in-progress
+    roadmap ticket for bulk import, which both keeps the app's own backlog
+    current and fills the board's previously empty In progress column. A test
+    covers the banner (shows once, stays dismissed).
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).
