@@ -6,6 +6,7 @@ import Anthropic from '@anthropic-ai/sdk'
 // client quietly fell back to the stub). Vercel's builder maps the .js
 // specifier back to the .ts source when compiling.
 import { draftStoryHeuristic, groomDraftContentSchema } from '../src/lib/groomDraft.js'
+import { importResponseContentSchema, MAX_IMPORT_CHARS } from '../src/lib/importDraft.js'
 
 // Grooming proxy. The Anthropic call is gated behind two Vercel env vars,
 // GROOM_LLM=live and ANTHROPIC_API_KEY; with either missing the endpoint
@@ -84,6 +85,91 @@ scores (businessValue, timeCriticality, enablement each 1-5; jobSize in
 story points 1, 2, 3, 5, or 8). Propose conservatively; a human reviews
 and edits everything before it applies.`
 
+// The import branch structures a whole pasted list at once. Same endpoint,
+// same gate: it reuses the secret + rate limit checked in the handler before
+// the branch. Per item the model returns a cleaned title, an area, an effort,
+// an importance, and a deadline that is ONLY ever a date the text stated.
+const IMPORT_SCHEMA = {
+  type: 'object',
+  properties: {
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'A cleaned, concise task title. Strip bullet/number noise and section headers.',
+          },
+          area: { type: 'string', enum: ['work', 'home'] },
+          effort: { type: 'string', enum: ['S', 'M', 'L'] },
+          importance: { type: 'integer', enum: [1, 2, 3, 4, 5] },
+          deadline: {
+            type: ['string', 'null'],
+            description:
+              'ISO date (yyyy-mm-dd) ONLY if the text explicitly states a deadline for this item; otherwise null. Never invent a deadline.',
+          },
+        },
+        required: ['title', 'area', 'effort', 'importance', 'deadline'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['items'],
+  additionalProperties: false,
+} as const
+
+const IMPORT_SYSTEM = `You structure a raw pasted backlog for Foreground, a
+personal prioritization app. The paste is a rough list where each line is
+roughly one task; it may carry bullets, numbers, section headers, and
+trailing notes. Return one item per real task. For each: a cleaned concise
+title (drop bullet/number noise and any trailing meta), an area ("work" or
+"home") inferred from wording, an effort ("S", "M", or "L"), an importance
+(1 low to 5 high), and a deadline. Set the deadline to an ISO date
+(yyyy-mm-dd) ONLY when the text explicitly names one for that item, resolving
+a stated relative date against the provided current date; otherwise null.
+Never invent a deadline. Drop section-header and separator lines. A human
+reviews and edits everything before anything is saved.`
+
+async function handleImport(req: VercelRequest, res: VercelResponse) {
+  const text = typeof req.body?.text === 'string' ? req.body.text : ''
+  if (!text.trim()) {
+    return res.status(400).json({ error: 'text required' })
+  }
+  if (text.length > MAX_IMPORT_CHARS) {
+    return res.status(400).json({ error: `paste too long (max ${MAX_IMPORT_CHARS} characters)` })
+  }
+
+  // Not wired: tell the client to parse locally (and label it) rather than
+  // pretend the model ran. Same stub principle as the grooming draft.
+  if (process.env.GROOM_LLM !== 'live' || !process.env.ANTHROPIC_API_KEY) {
+    return res.status(200).json({ source: 'stub', items: [] })
+  }
+
+  try {
+    const client = new Anthropic()
+    const today = new Date().toISOString().slice(0, 10)
+    const response = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 4096,
+      system: IMPORT_SYSTEM,
+      messages: [
+        { role: 'user', content: `Current date: ${today}.\n\nRaw pasted list:\n${text}` },
+      ],
+      output_config: { format: { type: 'json_schema', schema: IMPORT_SCHEMA } },
+    })
+    const out = response.content.find((block) => block.type === 'text')?.text
+    if (!out) throw new Error('no text block in response')
+    const parsed = importResponseContentSchema.parse(JSON.parse(out))
+    return res.status(200).json({ source: 'llm', items: parsed.items })
+  } catch (err) {
+    // Fail soft: signal a fallback so the client parses locally and says the
+    // model call failed, not that it was never wired.
+    console.error('groom import: live structuring failed, signaling stub fallback', err)
+    return res.status(200).json({ source: 'stub-fallback', items: [] })
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'POST only' })
@@ -99,6 +185,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (overRateLimit(clientIp(req))) {
     return res.status(429).json({ error: 'too many requests, slow down' })
+  }
+
+  // Bulk import shares this gate rather than opening a second endpoint.
+  if (req.body?.mode === 'import') {
+    return handleImport(req, res)
   }
 
   const title = typeof req.body?.title === 'string' ? req.body.title.trim() : ''

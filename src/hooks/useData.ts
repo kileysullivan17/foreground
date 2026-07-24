@@ -31,6 +31,15 @@ export function useCreateItem() {
   })
 }
 
+/** Bulk import save path: create every reviewed item, then refresh once. */
+export function useCreateItemsBulk() {
+  const invalidate = useItemsInvalidator()
+  return useMutation({
+    mutationFn: (inputs: NewItem[]) => Promise.all(inputs.map((input) => db.createItem(input))),
+    onSuccess: invalidate,
+  })
+}
+
 export function useUpdateItem() {
   const invalidate = useItemsInvalidator()
   return useMutation({
