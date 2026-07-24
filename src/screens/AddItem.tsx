@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { itemFormSchema, type ItemFormOutput, type ItemFormValues } from '../schemas'
@@ -57,7 +58,11 @@ export function AddItem() {
     <main className="mx-auto max-w-lg px-5 pb-4 pt-3">
       <h1 className="font-display text-display">Add item</h1>
       <p className="mt-1 text-[13px] leading-[1.5] text-sand-700 dark:text-sand-400">
-        Title and area are all it needs. The rest can wait.
+        Title and area are all it needs. The rest can wait. Got a whole list?{' '}
+        <Link to="/import" className="font-semibold text-clay-700 underline dark:text-clay-300">
+          Import it
+        </Link>
+        .
       </p>
 
       {savedTitle && (

@@ -376,6 +376,75 @@ hosted Supabase.
     instead of 'stub' ("not wired yet"), which is the distinction the UI
     copy already promised.
 
+## v2.3: bulk import with AI-assisted structuring
+
+56. **Capture was one item at a time, so a pasted list became one item with
+    a paragraph title. That friction is what kept the app off a real daily
+    backlog.** The new `/import` screen takes a messy paste and turns it into
+    many items. Two structuring paths feed one mandatory review step, and
+    only that step can save.
+
+57. **The local parser is a pure, well-tested function, deliberately modest.**
+    `parseImportText` (in `src/lib/importDraft.ts`, shared so the api build can
+    reuse the schemas beside it) splits on newlines, strips bullet
+    (`- * • ‣ ◦ · –`) and list-number (`1.`, `2)`, `(3)`) prefixes, trims,
+    drops blanks and bare-glyph lines, and ignores obvious headers (markdown
+    `#`, rules, and bare labels ending in a colon). Bullet stripping requires
+    a following space so it never mangles `-5 degrees`; a bare `•` or `-`
+    with no task is caught separately. A trailing note is kept as part of the
+    title (`Call Sam: about the invoice` survives whole) because separating
+    notes is the AI path's job, not the parser's. It never throws; the worst
+    case is an empty list. Works fully offline and with `GROOM_LLM` off.
+
+58. **AI structuring reuses the existing gated groom endpoint; no second
+    unauthenticated path.** `api/groom.ts` gained a `mode: 'import'` branch
+    that shares the same `GROOM_SECRET` echo and per-IP rate limit checked
+    before the branch. It returns, per item, a cleaned title, an area, an
+    effort, an importance, and a deadline that is null unless the text stated
+    one (the system prompt carries the never-invent-deadlines rule, and the
+    Zod schema refuses anything that is not a plain `yyyy-mm-dd` or null). The
+    paste is capped at 10,000 chars server- and client-side so a giant paste
+    cannot run up the paid endpoint.
+
+59. **The AI path fails soft to the local parse, labeled honestly, same
+    three-way distinction grooming already draws.** Model off →`source: 'stub'`
+    ("the model is not wired here"); a live call that failed, was rate-limited,
+    or lacked the secret → `'stub-fallback'` ("the model call failed"). Either
+    way the client parses locally and says so; a stub is never passed off as
+    the model. Each review row also carries an `origin`, and every field shows
+    a small provenance chip (`AI` vs `parsed`/`default`) so an AI proposal is
+    never mistaken for a parsed value.
+
+60. **The review step is the accept gate, matching the grooming assistant's
+    principle: nothing auto-applies.** Every proposed field is editable
+    inline, each row has an include/exclude checkbox, and a "set area for all"
+    control retargets the batch. Save creates every included item through a new
+    `useCreateItemsBulk` save path (the data-layer interface is unchanged) and
+    routes to What Now so the imports rank immediately. A one-line privacy note
+    on the paste screen states that AI structuring sends the text to the
+    Anthropic API and local parse does not, because work items get pasted here.
+    Tests cover the parser (bullets, numbers, blanks, headers, caps) and the
+    accept gate (reaching review writes nothing; Save writes only included,
+    reviewed rows and routes; the AI path degrades to a labeled local parse
+    offline).
+
+61. **The live AI path is tested with the model mocked, not just the offline
+    stub.** Two suites close the gap the first pass left open. `api/groom.test.ts`
+    mocks the Anthropic SDK and drives the import branch end to end: a valid
+    model response returns `source: 'llm'` with the items validated and an
+    explicit ISO deadline passed through; a model deadline that is not a plain
+    `yyyy-mm-dd` (or an out-of-range importance) is rejected by the Zod backstop
+    and falls to `stub-fallback`, so malformed or invented output can never
+    reach the client; a thrown SDK call, a missing key, an off switch, empty or
+    oversize text, and the secret gate all behave. `src/lib/importClient.test.ts`
+    forces `import.meta.env.DEV` off to exercise the deployed fetch branch: an
+    `llm` body maps to AI-origin rows with deadlines intact and sends
+    `mode: 'import'` with the paste capped and the cost-gate secret header, while
+    a 401, a 429, a network throw, a not-wired stub, and a malformed body each
+    degrade to a labeled local parse. The api test lives under `api/` (the app
+    tsconfig has no node types) and is wired into vitest's include but excluded
+    from the api tsc build.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

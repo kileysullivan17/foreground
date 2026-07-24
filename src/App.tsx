@@ -6,6 +6,7 @@ import { ThemeToggle } from './components/ThemeToggle'
 import { PutOff } from './screens/PutOff'
 import { Projects } from './screens/Projects'
 import { AddItem } from './screens/AddItem'
+import { Import } from './screens/Import'
 import { Product } from './screens/Product'
 import { About } from './screens/About'
 
@@ -141,6 +142,7 @@ export default function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/product" element={<Product />} />
             <Route path="/add" element={<AddItem />} />
+            <Route path="/import" element={<Import />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </RouteBoundary>
