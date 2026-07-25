@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTour } from '../components/Tour'
 import { rankItems, type ScoredItem } from '../scoring/score'
 import { useItems, useProjects } from '../hooks/useData'
 import { FilterChips } from '../components/FilterChips'
@@ -23,6 +24,7 @@ const NO_ITEMS: never[] = []
 const DEMO_INTRO_KEY = 'fg-demo-intro-v1'
 
 function DemoIntro() {
+  const { startTour } = useTour()
   const [dismissed, setDismissed] = useState(
     () => typeof localStorage !== 'undefined' && localStorage.getItem(DEMO_INTRO_KEY) === '1',
   )
@@ -37,13 +39,28 @@ function DemoIntro() {
   }
   return (
     <div className="mb-4 flex items-start gap-3 rounded-card bg-clay-100 px-4 py-3 dark:bg-surface-dark-raised">
-      <p className="min-w-0 flex-1 text-[13px] leading-[1.5] text-sand-800 dark:text-sand-300">
-        You're in a live demo of Foreground. Every item is editable sample data, ranked by a Weighted
-        Shortest Job First (WSJF) score that also surfaces work you keep putting off.{' '}
-        <Link to="/about" className="font-semibold whitespace-nowrap text-clay-700 underline dark:text-clay-300">
-          How it works →
-        </Link>
-      </p>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] leading-[1.5] text-sand-800 dark:text-sand-300">
+          You're in a live demo of Foreground. Every item is editable sample data, ranked by a
+          Weighted Shortest Job First (WSJF) score that also surfaces work you keep putting off.
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <button
+            type="button"
+            onClick={startTour}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-pill bg-clay-500 px-3.5 text-[12.5px] font-semibold text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M5 12h14" />
+              <path d="m13 6 6 6-6 6" />
+            </svg>
+            Take the tour
+          </button>
+          <Link to="/about" className="text-[12.5px] font-semibold text-clay-700 underline dark:text-clay-300">
+            How it works
+          </Link>
+        </div>
+      </div>
       <button
         type="button"
         onClick={dismiss}
@@ -127,7 +144,7 @@ function ForegroundCard({
           <StatusActions item={item} context="foreground" />
         </div>
       </div>
-      <div className="mt-3.5 lg:mt-0">
+      <div className="mt-3.5 lg:mt-0" data-tour="fg-ledger">
         <ScoreLedger scored={scored} context="foreground" size="lg" />
       </div>
       <div className="mt-3.5 lg:hidden">
@@ -315,6 +332,7 @@ export function WhatNow() {
           />
           <button
             type="button"
+            data-tour="quickwins"
             aria-pressed={quickWins}
             onClick={() => setQuickWins((v) => !v)}
             className={`relative inline-flex min-h-[38px] items-center gap-1.5 rounded-pill px-4 text-[13.5px] before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
@@ -350,7 +368,7 @@ export function WhatNow() {
         {first ? (
           <>
             <ForegroundCard scored={first} total={readyShown.length} projects={projects} />
-            <ul className="mt-3.5 space-y-2.5">
+            <ul className="mt-3.5 space-y-2.5" data-tour="queue">
               {queue.map((s, i) => (
                 <QueueCard
                   key={s.item.id}
