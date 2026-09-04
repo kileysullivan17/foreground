@@ -4,6 +4,7 @@ import { WhatNow } from './screens/WhatNow'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { ThemeToggle } from './components/ThemeToggle'
 import { TourProvider } from './components/Tour'
+import { AnalyticsBoot } from './analytics/AnalyticsBoot'
 import { PutOff } from './screens/PutOff'
 import { Projects } from './screens/Projects'
 import { AddItem } from './screens/AddItem'
@@ -96,6 +97,7 @@ export default function App() {
       <TourProvider>
       <div className="min-h-dvh bg-ground pb-24 font-body text-[15px] text-ink lg:pb-10 dark:bg-ground-dark dark:text-ink-inverse">
         <ScrollToTop />
+        <AnalyticsBoot />
         <header className="mx-auto flex max-w-lg items-center gap-2 px-5 pt-5 lg:max-w-[1060px] lg:gap-6 lg:px-8">
           <Link to="/" className="flex min-h-tap items-center gap-2 lg:mr-auto">
             <Logo />

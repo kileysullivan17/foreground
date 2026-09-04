@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { db } from '../data'
+import { trackItemCompleted, trackItemCreated } from '../analytics/events'
 import type {
+  Item,
   ItemPatch,
   NewItem,
   NewProject,
@@ -23,10 +25,22 @@ function useItemsInvalidator() {
   return () => qc.invalidateQueries({ queryKey: ['items'] })
 }
 
+// The item list as the cache currently holds it. Analytics reads it before a
+// mutation lands so an event describes the state the user acted on.
+function useCachedItems() {
+  const qc = useQueryClient()
+  return () => qc.getQueryData<Item[]>(['items']) ?? []
+}
+
 export function useCreateItem() {
   const invalidate = useItemsInvalidator()
+  const cached = useCachedItems()
   return useMutation({
-    mutationFn: (input: NewItem) => db.createItem(input),
+    mutationFn: async (input: NewItem) => {
+      const item = await db.createItem(input)
+      trackItemCreated(item, [...cached(), item])
+      return item
+    },
     onSuccess: invalidate,
   })
 }
@@ -34,16 +48,31 @@ export function useCreateItem() {
 /** Bulk import save path: create every reviewed item, then refresh once. */
 export function useCreateItemsBulk() {
   const invalidate = useItemsInvalidator()
+  const cached = useCachedItems()
   return useMutation({
-    mutationFn: (inputs: NewItem[]) => Promise.all(inputs.map((input) => db.createItem(input))),
+    mutationFn: async (inputs: NewItem[]) => {
+      const items = await Promise.all(inputs.map((input) => db.createItem(input)))
+      const all = [...cached(), ...items]
+      for (const item of items) trackItemCreated(item, all)
+      return items
+    },
     onSuccess: invalidate,
   })
 }
 
 export function useUpdateItem() {
   const invalidate = useItemsInvalidator()
+  const cached = useCachedItems()
   return useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: ItemPatch }) => db.updateItem(id, patch),
+    mutationFn: async ({ id, patch }: { id: string; patch: ItemPatch }) => {
+      const before = cached()
+      const item = await db.updateItem(id, patch)
+      // The Projects editor can mark an item done through a full patch. The
+      // event fires only once the save has landed, so a failed save that is
+      // retried from the toast cannot count twice.
+      if (patch.status === 'done') trackItemCompleted(id, before)
+      return item
+    },
     onSuccess: invalidate,
   })
 }
@@ -51,9 +80,14 @@ export function useUpdateItem() {
 /** Status changes also reset the staleness clock — acting on an item is touching it. */
 export function useSetStatus() {
   const invalidate = useItemsInvalidator()
+  const cached = useCachedItems()
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: Status }) =>
-      db.updateItem(id, { status, lastTouchedAt: new Date().toISOString() }),
+    mutationFn: async ({ id, status }: { id: string; status: Status }) => {
+      const before = cached()
+      const item = await db.updateItem(id, { status, lastTouchedAt: new Date().toISOString() })
+      if (status === 'done') trackItemCompleted(id, before)
+      return item
+    },
     onSuccess: invalidate,
   })
 }

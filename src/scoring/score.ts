@@ -42,6 +42,12 @@ export interface ScoredItem {
 export interface ScoreOptions {
   now?: Date
   quickWins?: boolean
+  /**
+   * Set to false to score every item as if it were freshly touched. Not a
+   * user-facing mode: the analytics layer ranks the same list with and
+   * without staleness to learn whether the multiplier changed the order.
+   */
+  staleness?: boolean
 }
 
 export function daysSinceTouched(item: Item, now: Date): number {
@@ -141,7 +147,7 @@ export function scoreItem(item: Item, allItems: Item[], opts: ScoreOptions = {})
 
   const costOfDelay = delayFactors.reduce((sum, f) => sum + f.points, 0)
   const size = sizeComponent(item, opts.quickWins ?? false)
-  const staleness = stalenessComponent(item, now)
+  const staleness = opts.staleness === false ? null : stalenessComponent(item, now)
 
   const score =
     Math.round((costOfDelay / size.divisor) * (staleness?.multiplier ?? 1) * 10) / 10

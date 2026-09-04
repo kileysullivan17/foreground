@@ -110,6 +110,10 @@ never leaves the browser, so the secret is irrelevant locally.
 ## Repo notes
 
 - `FRAMEWORK.md`: the prioritization model as a PM artifact.
+- `docs/analytics.md`: the six PostHog events, each written as a test of
+  the product's own design claims, the decision rule stated before any data
+  existed, and the self-exclusion rules. Capture runs only on the production
+  hostname, so a clone or a preview deployment sends nothing anywhere.
 - `DECISIONS.md`: every judgment call made during the build, and why.
 - `scripts/verify-drive.mjs`: Playwright end-to-end drive of every screen
   (see `.claude/skills/verify/SKILL.md`).

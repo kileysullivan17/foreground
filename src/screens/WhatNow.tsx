@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTour } from '../components/Tour'
 import { rankItems, type ScoredItem } from '../scoring/score'
@@ -11,6 +11,12 @@ import { ScoreLedger } from '../components/ScoreLedger'
 import { EmptyState } from '../components/EmptyState'
 import { teaserLine } from '../lib/scoreDisplay'
 import { effortLabels } from '../lib/format'
+import {
+  comparePromotion,
+  trackRankingReordered,
+  trackScoreBreakdownExpanded,
+  trackWeightsAdjusted,
+} from '../analytics/events'
 import type { Area, Item, Project } from '../types'
 
 type AreaFilter = 'all' | Area
@@ -296,9 +302,27 @@ export function WhatNow() {
     void today // recompute trigger at the day boundary; see above
     return rankItems(items, { quickWins })
   }, [items, quickWins, today])
-  const inArea = (s: ScoredItem) => area === 'all' || s.item.area === area
-  const readyShown = ready.filter(inArea)
-  const blockedShown = blocked.filter(inArea)
+  // The same list with staleness switched off: the order the user would have
+  // seen if nothing were ever put off. Analytics only; never rendered.
+  const readyWithoutStaleness = useMemo(() => {
+    void today
+    return rankItems(items, { quickWins, staleness: false }).ready
+  }, [items, quickWins, today])
+  const readyShown = useMemo(
+    () => ready.filter((s) => area === 'all' || s.item.area === area),
+    [ready, area],
+  )
+  const blockedShown = blocked.filter((s) => area === 'all' || s.item.area === area)
+
+  // ranking_reordered_by_staleness: did the multiplier change the order the
+  // user is looking at? Deduped per distinct promoted set inside events.ts.
+  useEffect(() => {
+    if (!itemsQuery.data) return
+    const shownWithout = readyWithoutStaleness.filter(
+      (s) => area === 'all' || s.item.area === area,
+    )
+    trackRankingReordered(comparePromotion(readyShown, shownWithout))
+  }, [itemsQuery.data, readyShown, readyWithoutStaleness, area])
   const [first, ...queue] = readyShown
   const ranks = new Map(readyShown.map((s, i) => [s.item.id, i + 1]))
 
@@ -334,7 +358,12 @@ export function WhatNow() {
             type="button"
             data-tour="quickwins"
             aria-pressed={quickWins}
-            onClick={() => setQuickWins((v) => !v)}
+            onClick={() => {
+              const next = !quickWins
+              setQuickWins(next)
+              // Quick wins steepens the job-size divisors (1/2/3 to 1/3/6).
+              trackWeightsAdjusted('job_size_divisor', next ? 'up' : 'down')
+            }}
             className={`relative inline-flex min-h-[38px] items-center gap-1.5 rounded-pill px-4 text-[13.5px] before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
               quickWins
                 ? 'bg-clay-500 font-semibold text-ink dark:bg-clay-400'
@@ -376,7 +405,11 @@ export function WhatNow() {
                   rank={i + 2}
                   projects={projects}
                   open={openId === s.item.id}
-                  onToggle={() => setOpenId(openId === s.item.id ? null : s.item.id)}
+                  onToggle={() => {
+                    const opening = openId !== s.item.id
+                    setOpenId(opening ? s.item.id : null)
+                    if (opening) trackScoreBreakdownExpanded(s)
+                  }}
                 />
               ))}
             </ul>
