@@ -360,7 +360,7 @@ export function Projects() {
   ]
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 px-3.5 pb-4 pt-[18px]">
+    <main className="mx-auto max-w-lg space-y-block px-3.5 pb-4 pt-title-top">
       <h1 className="px-1.5 text-title text-text">Projects</h1>
       <QueryStates queries={[projectsQuery, itemsQuery]} loadingLabel="Loading projects…">
       {areas.map(({ area, heading }) => {

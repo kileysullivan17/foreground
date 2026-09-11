@@ -44,7 +44,7 @@ function DemoIntro() {
     setDismissed(true)
   }
   return (
-    <div className="mb-4 flex items-start gap-3 rounded-panel border border-line bg-panel px-4 py-3">
+    <div className="mb-block flex items-start gap-3 rounded-panel border border-line bg-panel px-4 py-3">
       <div className="min-w-0 flex-1">
         <p className="text-[13px] leading-[1.5] text-text-2">
           You're in a live demo of Foreground. Every item is editable sample data, ranked by a
@@ -133,7 +133,7 @@ function ForegroundCard({
     <section
       id={`ranked-${item.id}`}
       aria-label="In the foreground"
-      className="rounded-panel border border-accent-line bg-panel p-[18px] shadow-lit lg:grid lg:grid-cols-[1fr_360px] lg:gap-[30px] lg:p-7"
+      className="rounded-panel border border-accent-line bg-panel p-[18px] shadow-lit lg:grid lg:grid-cols-[1fr_360px] lg:gap-10 lg:p-8"
     >
       <div className="flex flex-col">
         <div className="flex items-center gap-2 font-mono text-label uppercase">
@@ -180,7 +180,7 @@ function QueueCard({
 }) {
   const { item } = scored
   return (
-    <li id={`ranked-${item.id}`} className="border-t border-dotted border-line-strong py-[14px]">
+    <li id={`ranked-${item.id}`} className="border-t border-dotted border-line-strong py-row">
       <button
         type="button"
         aria-expanded={open}
@@ -243,7 +243,7 @@ function BlockedCard({
 }) {
   const { item } = scored
   return (
-    <li className="border-t border-dotted border-line-strong py-3.5">
+    <li className="border-t border-dotted border-line-strong py-row">
       <button
         type="button"
         aria-expanded={open}
@@ -334,14 +334,14 @@ export function WhatNow() {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-3.5 pt-[18px] lg:max-w-[1060px] lg:px-8 lg:pt-6">
+    <main className="mx-auto max-w-lg px-3.5 pt-title-top lg:max-w-[1060px] lg:px-8 lg:pt-title-top-lg">
       <DemoIntro />
-      <div className="px-1.5 lg:flex lg:items-end lg:gap-4 lg:px-0">
+      <div className="px-1.5 lg:mb-block-lg lg:flex lg:items-end lg:gap-4 lg:px-0">
         <h1 className="text-title text-text lg:text-[56px] lg:leading-[0.9] lg:tracking-[-0.045em]">What now</h1>
         <p className="hidden pb-1.5 text-meta text-text-2 lg:block">
           ranked by the arithmetic, open any row to check it
         </p>
-        <div className="mb-[18px] mt-4 flex flex-wrap items-center gap-2 lg:mb-1 lg:ml-auto lg:mt-0">
+        <div className="mb-block mt-lede flex flex-wrap items-center gap-2 lg:mb-1 lg:ml-auto lg:mt-0">
           <FilterChips
             label="Area"
             options={[
@@ -385,7 +385,7 @@ export function WhatNow() {
         {first ? (
           <>
             <ForegroundCard scored={first} total={readyShown.length} projects={projects} />
-            <ul className="mx-1.5 mt-[18px] border-b border-dotted border-line-strong" data-tour="queue">
+            <ul className="mx-1.5 mt-block lg:mt-block-lg border-b border-dotted border-line-strong" data-tour="queue">
               {queue.map((s, i) => (
                 <QueueCard
                   key={s.item.id}
@@ -414,7 +414,7 @@ export function WhatNow() {
         )}
 
         {blockedShown.length > 0 && (
-          <section className="mx-1.5 mt-2 pb-4">
+          <section className="mx-1.5 mt-lede pb-4">
             <button
               type="button"
               aria-expanded={showBlocked}

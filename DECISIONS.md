@@ -539,6 +539,19 @@ hosted Supabase.
     (`.text-row`, `.text-factor`, `.rounded-inner`), which is the one
     place the design names leak into a test.
 
+69. **Spacing is a scale, not a number.** The Ember port carried the spec's
+    pixel values straight into utilities (`pt-[18px]`, `mt-[18px]`,
+    `py-[14px]`), so every screen had its own copy of the rhythm and the
+    desktop What now sat its 56px title on the lit panel with no rest
+    between them. The rhythm is now seven named tokens in `src/index.css`
+    (`page-top`, `title-top`, `title-top-lg`, `lede`, `block`, `block-lg`,
+    `row`) and every screen uses the same utilities, so a spacing change is
+    one edit. The steps also grew: header to title 24px and 44px on desktop,
+    the block step 24px and 32px on desktop, the lit panel's desktop inset
+    32px. Row padding stays 14px because the dotted rules already separate
+    rows and more air there would slow the scan. EMBER.md §4 records the
+    same scale.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

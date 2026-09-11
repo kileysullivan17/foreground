@@ -86,11 +86,11 @@ export function QueryStates({
             </div>
           </div>
         )}
-        <div className="mx-1.5 mt-[18px] border-b border-dotted border-line-strong">
+        <div className="mx-1.5 mt-block lg:mt-block-lg border-b border-dotted border-line-strong">
           {[0, 1, variant === 'cards' ? 2 : -1]
             .filter((i) => i >= 0)
             .map((i) => (
-              <div key={i} className="grid grid-cols-[26px_minmax(0,1fr)_auto] gap-x-2 border-t border-dotted border-line-strong py-[14px]">
+              <div key={i} className="grid grid-cols-[26px_minmax(0,1fr)_auto] gap-x-2 border-t border-dotted border-line-strong py-row">
                 <div className={`h-3 w-4 ${bar}`} />
                 <div>
                   <div className={`h-3.5 w-3/4 ${bar}`} />

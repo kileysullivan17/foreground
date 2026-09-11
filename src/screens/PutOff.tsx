@@ -43,7 +43,7 @@ function PutOffRow({
   }
 
   return (
-    <li className="border-t border-dotted border-line-strong py-[14px]">
+    <li className="border-t border-dotted border-line-strong py-row">
       <div className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-start gap-x-2">
         <span className="flex items-baseline gap-[3px] pt-px">
           <span
@@ -127,14 +127,14 @@ export function PutOff() {
   const shown = stale.filter((i) => area === 'all' || i.area === area)
 
   return (
-    <main className="mx-auto max-w-lg px-3.5 pb-4 pt-[18px]">
+    <main className="mx-auto max-w-lg px-3.5 pb-4 pt-title-top">
       <div className="px-1.5">
         <h1 className="text-title text-text">Stuff I've put off</h1>
-        <p className="mt-3 text-body text-text-2">
+        <p className="mt-lede text-body text-text-2">
           Stalest first. “Touch it” resets the clock and keeps a one-line note of where things
           stand.
         </p>
-        <div className="mb-[18px] mt-4 flex items-center justify-between gap-3">
+        <div className="mb-block mt-lede flex items-center justify-between gap-3">
           <FilterChips
             label="Area"
             options={[

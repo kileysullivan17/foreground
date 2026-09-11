@@ -58,9 +58,9 @@ export function AddItem() {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-5 pb-4 pt-[18px]">
+    <main className="mx-auto max-w-lg px-5 pb-4 pt-title-top">
       <h1 className="text-title text-text">Add item</h1>
-      <p className="mt-3 text-body text-text-2">
+      <p className="mt-lede text-body text-text-2">
         Title and area are all it needs. The rest can wait. Got a whole list?{' '}
         <Link to="/import" className="font-semibold text-accent underline underline-offset-2">
           Import it

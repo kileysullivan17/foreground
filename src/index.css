@@ -70,6 +70,17 @@
 
   --spacing-tap: 44px;
 
+  /* Vertical rhythm (EMBER.md §4). One named scale so every screen breathes
+     the same way: the page top, the header-to-title step, the title-to-lede
+     step, the block step between sections, and list-row padding. */
+  --spacing-page-top: 20px;
+  --spacing-title-top: 24px;
+  --spacing-title-top-lg: 44px;
+  --spacing-lede: 16px;
+  --spacing-block: 24px;
+  --spacing-block-lg: 32px;
+  --spacing-row: 14px;
+
   --radius-pill: 999px;
   --radius-panel: 22px;
   --radius-inner: 16px;

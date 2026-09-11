@@ -706,10 +706,10 @@ export function Product() {
   }
 
   return (
-    <main className="pt-[18px]">
+    <main className="pt-title-top">
       <div className="mx-auto max-w-lg px-5">
         <h1 className="text-title text-text">Product</h1>
-        <p className="mt-3 text-body text-text-2">
+        <p className="mt-lede text-body text-text-2">
           The app's own roadmap, managed in the open as a kanban board of user-story tickets, each
           with acceptance criteria and a Weighted Shortest Job First (WSJF) score. Tap a card to read
           it or move it between columns; raw captures can be groomed into a full story.

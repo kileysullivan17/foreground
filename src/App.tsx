@@ -69,7 +69,7 @@ export default function App() {
       <div className="min-h-dvh bg-ground pb-28 font-sans text-[15px] text-text antialiased lg:pb-10">
         <ScrollToTop />
         <AnalyticsBoot />
-        <header className="mx-auto flex max-w-lg items-center gap-2 px-5 pt-[18px] lg:max-w-[1060px] lg:gap-6 lg:border-b lg:border-line lg:px-8 lg:pb-3">
+        <header className="mx-auto flex max-w-lg items-center gap-2 px-5 pt-page-top lg:max-w-[1060px] lg:gap-6 lg:border-b lg:border-line lg:px-8 lg:pb-4">
           <Link to="/" className="flex min-h-tap items-center gap-2.5 lg:mr-auto">
             <Logo />
             <span className="text-[15px] font-semibold tracking-[-0.01em] text-text lg:text-base">

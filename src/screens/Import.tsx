@@ -223,9 +223,9 @@ export function Import() {
   // ---- Paste step ----
   if (!result) {
     return (
-      <main className="mx-auto max-w-lg px-5 pb-4 pt-[18px]">
+      <main className="mx-auto max-w-lg px-5 pb-4 pt-title-top">
         <h1 className="text-title text-text">Import a list</h1>
-        <p className="mt-3 text-body text-text-2">
+        <p className="mt-lede text-body text-text-2">
           Paste a messy list, one thing per line. Bullets, numbers, and trailing notes are fine.
         </p>
 
@@ -281,7 +281,7 @@ export function Import() {
 
   // ---- Review step (the accept gate) ----
   return (
-    <main className="mx-auto max-w-lg px-5 pb-6 pt-[18px] lg:max-w-[900px]">
+    <main className="mx-auto max-w-lg px-5 pb-6 pt-title-top lg:max-w-[900px]">
       <div className="flex items-baseline gap-3">
         <h1 className="text-title text-text">Review</h1>
         <span className="font-mono text-[12px] tabular-nums text-text-3">

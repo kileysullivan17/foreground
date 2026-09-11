@@ -147,11 +147,14 @@ only, with tracking.
 - **Radii (locked):** pills `999px` for every control (buttons, segmented, filter
   chips, inputs, tab pills); panels `22px`; inner ledgers and tiles `16px`; story
   cards `18px`; film and screenshot bezels `28px`; phone frame `32px`.
-- **Screen padding:** 20px sides, 18px top to the header. Panels inset 14px from the
+- **Screen padding:** 20px sides, 20px top to the header (`page-top`). Panels inset 14px from the
   screen edge (so panel content aligns with the 20px text margin).
-- **Vertical rhythm:** header → title 18px; title → controls 16px; controls → lit
-  panel 18px; panel → queue label 18px; list rows 14px top / bottom padding; lit
-  panel internal 18px sides, sections separated by 12–14px + a dotted rule.
+- **Vertical rhythm:** a named scale in `src/index.css` (`--spacing-*`), used as
+  `pt-title-top`, `mt-lede`, `mt-block`, `py-row`. Header → title 24px (44px at
+  ≥1024px); title → lede or controls 16px; controls → lit panel 24px (32px at
+  ≥1024px); panel → queue 24px (32px); list rows 14px top / bottom padding; lit
+  panel internal 18px sides (32px at ≥1024px), sections separated by 12–14px + a
+  dotted rule. Add a step to the scale rather than reaching for a raw pixel value.
 - **Hit targets:** ≥44px for row actions and primary buttons; 34–38px pills are
   acceptable only inside a 44px-tall row.
 - **Ground texture (splash only):** 88px grid of `line` at 0.038 alpha plus one

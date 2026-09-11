@@ -19,7 +19,7 @@ export function About() {
   const lead = 'font-semibold text-text'
 
   return (
-    <main className="mx-auto max-w-lg px-5 pb-8 pt-[18px]">
+    <main className="mx-auto max-w-lg px-5 pb-8 pt-title-top">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
         <h1 className="text-title text-text">About Foreground</h1>
         <button
@@ -35,7 +35,7 @@ export function About() {
         </button>
       </div>
 
-      <section className="mt-5 space-y-4 text-[14px] leading-[1.6] text-text-2">
+      <section className="mt-block space-y-4 text-[14px] leading-[1.6] text-text-2">
         <p>
           Foreground is a personal prioritization tool. It holds every open project and task across
           work and home in one place and answers one question on demand: what should I work on right
