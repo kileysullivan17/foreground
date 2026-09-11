@@ -150,7 +150,7 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
           target exists; otherwise this layer carries the dim itself. */}
       <div
         className="absolute inset-0"
-        style={{ background: rect ? 'transparent' : 'rgba(23,20,17,0.62)' }}
+        style={{ background: rect ? 'transparent' : 'rgba(15,17,20,0.7)' }}
         onClick={(e) => e.stopPropagation()}
       />
 
@@ -163,8 +163,8 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
             left: rect.left - pad,
             width: rect.width + pad * 2,
             height: rect.height + pad * 2,
-            borderRadius: 18,
-            boxShadow: '0 0 0 2.5px var(--color-clay-400), 0 0 0 9999px rgba(23,20,17,0.62)',
+            borderRadius: 22,
+            boxShadow: '0 0 0 2px var(--color-accent), 0 0 0 9999px rgba(15,17,20,0.7)',
           }}
         />
       )}
@@ -176,26 +176,26 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
             : 'bottom-[calc(84px+env(safe-area-inset-bottom))] lg:bottom-6'
         }`}
       >
-        <div className="rounded-card bg-surface-raised p-4 shadow-lg dark:bg-surface-dark-raised">
+        <div className="rounded-card border border-line bg-panel p-4 shadow-frame">
           <div className="flex items-center gap-2">
-            <span className="text-micro font-semibold uppercase tracking-[0.05em] text-clay-700 dark:text-clay-300">
+            <span className="font-mono text-label uppercase text-accent">
               Tour
             </span>
-            <span className="text-[11.5px] font-semibold tabular-nums text-sand-600 dark:text-sand-500">
+            <span className="font-mono text-label tabular-nums text-text-3">
               {index + 1} / {STEPS.length}
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="ml-auto text-[12.5px] font-semibold text-sand-700 hover:text-clay-700 dark:text-sand-400 dark:hover:text-clay-300"
+              className="ml-auto min-h-8 text-[12.5px] font-semibold text-text-3 hover:text-text"
             >
               Skip
             </button>
           </div>
-          <h2 className="mt-1.5 font-display text-[19px] text-ink dark:text-ink-inverse">
+          <h2 className="mt-2 text-[19px] font-semibold leading-[1.25] tracking-[-0.01em] text-text">
             {step.title}
           </h2>
-          <p className="mt-1.5 text-detail leading-[1.5] text-sand-800 dark:text-sand-300">
+          <p className="mt-1.5 text-[13.5px] leading-[1.5] text-text-2">
             {step.body}
           </p>
           <div className="mt-3.5 flex items-center gap-2">
@@ -203,7 +203,7 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={back}
-                className="inline-flex min-h-tap items-center rounded-pill px-3 text-[13.5px] font-semibold text-sand-800 hover:bg-ink/6 dark:text-sand-300 dark:hover:bg-ink-inverse/8"
+                className="inline-flex min-h-tap items-center rounded-pill px-3 text-[13.5px] font-semibold text-text-3 hover:text-text"
               >
                 Back
               </button>
@@ -212,7 +212,7 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
               <button
                 type="button"
                 onClick={runCta}
-                className="ml-auto inline-flex min-h-tap items-center rounded-pill border-[1.5px] border-ink/25 px-4 text-[13.5px] font-semibold text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8"
+                className="ml-auto inline-flex min-h-tap items-center rounded-pill border border-line-strong px-4 text-[13.5px] font-semibold text-text hover:border-text"
               >
                 {step.cta.label}
               </button>
@@ -220,7 +220,7 @@ function TourOverlay({ onClose }: { onClose: () => void }) {
             <button
               type="button"
               onClick={next}
-              className={`inline-flex min-h-tap items-center rounded-pill bg-clay-500 px-5 font-display text-[14px] text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300 ${
+              className={`inline-flex min-h-tap items-center rounded-pill bg-accent px-5 text-[14px] font-semibold text-accent-ink hover:bg-accent-hover active:translate-y-px ${
                 step.cta ? '' : 'ml-auto'
               }`}
             >

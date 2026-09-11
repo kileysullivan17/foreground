@@ -482,6 +482,63 @@ hosted Supabase.
     A test covers start, step forward and back, the board hand-off, and close on
     Skip or Finish.
 
+## v2.6: PostHog instrumentation
+
+64. **Analytics exist to test the product's own claims, not to count
+    visitors.** Six explicit events (`docs/analytics.md`), each a hypothesis
+    about the staleness thesis or the auditability claim, with the rule for
+    what result would change the multiplier written down before any data
+    arrived. Autocapture, session recording, heatmaps, surveys, feature flags,
+    and remote config are all off, so the taxonomy cannot grow from the
+    dashboard side. PostHog rather than Amplitude because it is open source,
+    which matches an MIT-licensed tool whose argument is that its scoring is
+    inspectable; the portfolio site runs Amplitude so the two can be compared.
+
+65. **Self-exclusion is a mechanism, not a caution.** Capture is decided
+    before `posthog.init` and before the posthog-js chunk is downloaded: the
+    hostname must exactly equal the production one, `navigator.webdriver` must
+    be false, and a per-browser opt-out flag (`?fg_optout=1`) must be absent.
+    The allowlist is an exact match rather than "not localhost" because the
+    repo is public and a fork must send nothing anywhere. The Amplitude
+    instrumentation on the portfolio shipped without this and recorded only
+    the author's own testing; a warning in a document did not prevent that,
+    so the control lives in code and is pinned by tests. The flag is per
+    browser, which is stated as a limitation everywhere it is mentioned.
+
+66. **No item content leaves the browser.** Property values are buckets,
+    counts, and booleans only, and a test fails if a payload contains anything
+    else. Persistence is localStorage so no cookie is set, and no person
+    profile is ever created. Someone's backlog is the work they are avoiding.
+
+67. **The counterfactual ranking is a scoring option, not a second engine.**
+    `rankItems(items, { staleness: false })` ranks the same list as if nothing
+    were stale; an item is "promoted" when its position is better with the
+    multiplier than without. That keeps the analytics on the same code path
+    the screen uses, so the event can never disagree with the arithmetic the
+    card shows. The default is unchanged and a test pins that.
+
+## v2.7: Ember
+
+68. **One theme, one accent, one lit thing.** The Organic direction (cream
+    ground, terracotta and sage, Caprasimo) is replaced by Ember
+    (`design/EMBER.md`): a cool near-black ground with warm off-white type,
+    Archivo for prose and Geist Mono for anything that is a measurement.
+    Exactly one panel per screen carries the accent border and glow (the #1
+    readout, the focused field, the active tab); lists are dotted rules, not
+    cards. Terracotta is reserved for time and action (deadline points, the
+    staleness multiplier, the primary button, the in-progress dot), and
+    there is no second accent: unblocks, momentum and Done read in plain
+    white so orange means time pressure and white means flow. Overdue stays
+    the only red. The light theme and its toggle are gone rather than left
+    as dead plumbing, because a toggle that does nothing is a broken
+    control. The restyle kept every screen's DOM shape and copy; the only
+    additions are readouts the design specifies and the data already
+    carries (the staleness gauge and multiplier on Put off, area and column
+    counts, "· blocked" in a project row's margin). The verify drive's
+    selectors moved from Organic utility names to Ember type roles
+    (`.text-row`, `.text-factor`, `.rounded-inner`), which is the one
+    place the design names leak into a test.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

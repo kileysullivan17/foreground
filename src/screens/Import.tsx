@@ -11,27 +11,28 @@ import { MAX_IMPORT_CHARS } from '../lib/importDraft'
 import type { Area, Effort, NewItem } from '../types'
 
 const inputCls =
-  'w-full min-h-tap rounded-pill border border-ink/15 bg-surface-raised px-4 text-detail text-ink placeholder:text-sand-600 dark:border-ink-inverse/20 dark:bg-surface-dark-raised dark:text-ink-inverse dark:placeholder:text-sand-400'
+  'w-full min-h-tap rounded-pill border border-line bg-panel px-4 text-[14px] text-text placeholder:text-text-3'
 const smallBtn =
-  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 font-display text-[14.5px] active:scale-95 disabled:opacity-50'
-const clayBtn = `${smallBtn} bg-clay-500 text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300`
-const outlineBtn = `${smallBtn} border-[1.5px] border-ink/25 text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8`
+  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 text-[14px] font-semibold active:translate-y-px disabled:opacity-45'
+const primaryBtn = `${smallBtn} bg-accent text-accent-ink hover:bg-accent-hover`
+const outlineBtn = `${smallBtn} border border-line-strong text-text hover:border-text`
+const chip = 'inline-flex h-[18px] items-center rounded-pill px-1.5 font-mono text-[9.5px] font-medium uppercase tracking-[0.1em]'
 
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 2.75,
+  strokeWidth: 2.5,
   strokeLinecap: 'round',
   strokeLinejoin: 'round',
 } as const
 
 const SparkIcon = () => (
-  <svg className="mt-px flex-none" width="14" height="14" viewBox="0 0 24 24" {...stroke} aria-hidden>
+  <svg className="mt-px flex-none text-accent" width="14" height="14" viewBox="0 0 24 24" {...stroke} aria-hidden>
     <path d="M12 3l1.9 5.6 5.6 1.9-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z" />
   </svg>
 )
 const LockIcon = () => (
-  <svg className="mt-px flex-none" width="13" height="13" viewBox="0 0 24 24" {...stroke} aria-hidden>
+  <svg className="mt-px flex-none text-text-3" width="13" height="13" viewBox="0 0 24 24" {...stroke} aria-hidden>
     <rect x="5" y="11" width="14" height="9" rx="2" />
     <path d="M8 11V8a4 4 0 0 1 8 0v3" />
   </svg>
@@ -54,14 +55,10 @@ const sourceLabel: Record<StructureResult['source'], string> = {
 /** Tiny per-field provenance chip so AI proposals are never mistaken for parsed values. */
 function FieldTag({ row, field }: { row: ReviewRow; field: 'title' | 'other' }) {
   if (row.origin === 'ai') {
-    return (
-      <span className="inline-flex rounded-pill bg-sage-200 px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-[0.04em] text-sage-800 dark:bg-sage-800 dark:text-sage-200">
-        AI
-      </span>
-    )
+    return <span className={`${chip} bg-accent-soft text-accent`}>AI</span>
   }
   return (
-    <span className="inline-flex rounded-pill bg-sand-200 px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-[0.04em] text-sand-700 dark:bg-ink-inverse/12 dark:text-sand-400">
+    <span className={`${chip} bg-raised text-text-2`}>
       {field === 'title' ? 'parsed' : 'default'}
     </span>
   )
@@ -69,8 +66,8 @@ function FieldTag({ row, field }: { row: ReviewRow; field: 'title' | 'other' }) 
 
 function fieldLabel(text: string, row: ReviewRow, field: 'title' | 'other') {
   return (
-    <span className="mb-1 flex items-center gap-1.5">
-      <span className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
+    <span className="mb-1.5 flex items-center gap-1.5">
+      <span className="font-mono text-label uppercase text-text-3">
         {text}
       </span>
       <FieldTag row={row} field={field} />
@@ -88,13 +85,13 @@ function ReviewRowCard({
   onChange: (index: number, patch: Partial<ReviewRow>) => void
 }) {
   const cellSelect =
-    'min-h-tap w-full rounded-pill border border-ink/15 bg-surface-raised px-3 text-[14px] text-ink dark:border-ink-inverse/20 dark:bg-surface-dark-raised dark:text-ink-inverse'
+    'min-h-tap w-full rounded-pill border border-line bg-raised px-3 text-[14px] text-text'
   return (
     <li
       className={`rounded-card border p-3.5 ${
         row.include
-          ? 'border-ink/12 bg-surface dark:border-ink-inverse/12 dark:bg-surface-dark'
-          : 'border-dashed border-sand-400 bg-transparent opacity-60 dark:border-sand-600'
+          ? 'border-line bg-panel'
+          : 'border-dashed border-line-strong bg-transparent opacity-60'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -103,7 +100,7 @@ function ReviewRowCard({
           checked={row.include}
           onChange={(e) => onChange(index, { include: e.target.checked })}
           aria-label={`Include "${row.title}"`}
-          className="mt-1 size-[22px] flex-none appearance-none rounded-[7px] border-2 border-sand-500 bg-surface-raised checked:border-sage-600 checked:bg-sage-600 dark:border-sand-600 dark:bg-surface-dark-raised dark:checked:border-sage-500 dark:checked:bg-sage-500"
+          className="mt-1 size-[22px] flex-none appearance-none rounded-[7px] border border-line-strong bg-raised checked:border-accent checked:bg-accent"
         />
         <div className="min-w-0 flex-1">
           {fieldLabel('Title', row, 'title')}
@@ -111,7 +108,7 @@ function ReviewRowCard({
             value={row.title}
             onChange={(e) => onChange(index, { title: e.target.value })}
             aria-label={`Title for row ${index + 1}`}
-            className={`${inputCls} rounded-ctl`}
+            className={`${inputCls} rounded-inner bg-raised`}
           />
           <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4">
             <label className="block">
@@ -226,9 +223,9 @@ export function Import() {
   // ---- Paste step ----
   if (!result) {
     return (
-      <main className="mx-auto max-w-lg px-5 pb-4 pt-3">
-        <h1 className="font-display text-display">Import a list</h1>
-        <p className="mt-1 text-[13px] leading-[1.5] text-sand-700 dark:text-sand-400">
+      <main className="mx-auto max-w-lg px-5 pb-4 pt-[18px]">
+        <h1 className="text-title text-text">Import a list</h1>
+        <p className="mt-3 text-body text-text-2">
           Paste a messy list, one thing per line. Bullets, numbers, and trailing notes are fine.
         </p>
 
@@ -239,21 +236,21 @@ export function Import() {
           autoFocus
           placeholder={SAMPLE}
           aria-label="Paste your list"
-          className={`${inputCls.replace('rounded-pill', 'rounded-card').replace('min-h-tap', '')} mt-4 py-3 leading-[1.5]`}
+          className={`${inputCls.replace('rounded-pill', 'rounded-panel').replace('min-h-tap', '')} mt-4 py-3 leading-[1.5]`}
         />
-        <div className="mt-1.5 flex items-center justify-between px-1 text-[11.5px] text-sand-700 dark:text-sand-400">
+        <div className="mt-1.5 flex items-center justify-between px-1 font-mono text-[11px] text-text-3">
           <span className="tabular-nums">
             {text.length.toLocaleString()} / {MAX_IMPORT_CHARS.toLocaleString()}
           </span>
           {overCap && (
-            <span className="text-overdue dark:text-overdue-dark">
+            <span className="text-overdue">
               That is a big paste. Only the first {MAX_IMPORT_CHARS.toLocaleString()} characters
               will be used.
             </span>
           )}
         </div>
 
-        <p className="mt-3 flex items-start gap-2 rounded-ctl bg-sand-100 px-3 py-2.5 text-[11.5px] leading-[1.45] text-sand-800 dark:bg-surface-dark dark:text-sand-300">
+        <p className="mt-3 flex items-start gap-2 rounded-inner border border-line bg-panel px-3 py-2.5 text-[12px] leading-[1.45] text-text-2">
           <LockIcon />
           <span>
             AI structuring sends your pasted text to the Anthropic API. Local parse stays in your
@@ -269,13 +266,13 @@ export function Import() {
             type="button"
             onClick={runAI}
             disabled={!canStructure}
-            className={`${clayBtn} flex-1 gap-2`}
+            className={`${primaryBtn} flex-1 gap-2 [&_svg]:text-accent-ink`}
           >
             <SparkIcon />
             {structuring ? 'Structuring…' : 'Structure with AI'}
           </button>
         </div>
-        <p className="mt-2 px-1 text-[11.5px] text-sand-700 dark:text-sand-400">
+        <p className="mt-2 px-1 text-[12px] text-text-3">
           Both open a review step first. Nothing is saved until you confirm it there.
         </p>
       </main>
@@ -284,22 +281,22 @@ export function Import() {
 
   // ---- Review step (the accept gate) ----
   return (
-    <main className="mx-auto max-w-lg px-5 pb-6 pt-3 lg:max-w-[900px]">
-      <div className="flex items-baseline gap-2">
-        <h1 className="font-display text-display">Review</h1>
-        <span className="text-detail text-sand-700 dark:text-sand-400">
+    <main className="mx-auto max-w-lg px-5 pb-6 pt-[18px] lg:max-w-[900px]">
+      <div className="flex items-baseline gap-3">
+        <h1 className="text-title text-text">Review</h1>
+        <span className="font-mono text-[12px] tabular-nums text-text-3">
           {includedRows.length} of {rows.length} to import
         </span>
       </div>
 
-      <p className="mt-2.5 flex items-start gap-2 rounded-ctl bg-sage-100 px-3 py-2.5 text-meta leading-[1.45] text-sage-800 dark:bg-sage-900 dark:text-sage-200">
+      <p className="mt-3 flex items-start gap-2 rounded-inner bg-raised px-3 py-2.5 text-meta text-text-2">
         <SparkIcon />
         <span>{sourceLabel[result.source]} Nothing counts until you save.</span>
       </p>
 
       {rows.length === 0 ? (
         <div className="mt-5">
-          <p className="text-detail text-sand-700 dark:text-sand-400">
+          <p className="text-body text-text-2">
             Nothing to import from that paste. Go back and try another list.
           </p>
           <button type="button" onClick={() => setResult(null)} className={`${outlineBtn} mt-3`}>
@@ -310,31 +307,31 @@ export function Import() {
         <>
           <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
+              <span className="font-mono text-label uppercase text-text-3">
                 Set area for all
               </span>
-              <div className="inline-flex overflow-hidden rounded-pill border border-ink/18 dark:border-ink-inverse/22">
+              <div className="inline-flex rounded-pill border border-line-strong p-[3px]">
                 <button
                   type="button"
                   onClick={() => setAreaForAll('home')}
-                  className="min-h-tap px-4 text-[13.5px] text-sand-800 hover:bg-ink/5 dark:text-sand-300 dark:hover:bg-ink-inverse/8"
+                  className="min-h-[34px] rounded-pill px-4 font-mono text-label uppercase text-text-3 hover:bg-raised hover:text-text"
                 >
                   All home
                 </button>
                 <button
                   type="button"
                   onClick={() => setAreaForAll('work')}
-                  className="min-h-tap border-l border-ink/18 px-4 text-[13.5px] text-sand-800 hover:bg-ink/5 dark:border-ink-inverse/22 dark:text-sand-300 dark:hover:bg-ink-inverse/8"
+                  className="min-h-[34px] rounded-pill px-4 font-mono text-label uppercase text-text-3 hover:bg-raised hover:text-text"
                 >
                   All work
                 </button>
               </div>
             </div>
-            <div className="ml-auto flex items-center gap-3 text-[12.5px] font-semibold text-clay-700 dark:text-clay-300">
-              <button type="button" onClick={() => setIncludeAll(true)} className="min-h-tap">
+            <div className="ml-auto flex items-center gap-3 text-[12.5px] font-semibold text-accent">
+              <button type="button" onClick={() => setIncludeAll(true)} className="min-h-tap hover:underline">
                 Include all
               </button>
-              <button type="button" onClick={() => setIncludeAll(false)} className="min-h-tap">
+              <button type="button" onClick={() => setIncludeAll(false)} className="min-h-tap hover:underline">
                 Exclude all
               </button>
             </div>
@@ -354,7 +351,7 @@ export function Import() {
               type="button"
               onClick={save}
               disabled={includedRows.length === 0 || createItems.isPending}
-              className={`${clayBtn} flex-[1.5]`}
+              className={`${primaryBtn} flex-[1.5]`}
             >
               {createItems.isPending
                 ? 'Saving…'

@@ -1,107 +1,146 @@
 @import 'tailwindcss';
 
-/* Dark mode is class-driven (the toggle in the header), not media-driven:
-   the choice persists in localStorage and index.html applies it pre-paint. */
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* Organic tokens, ported from design/organic-tokens.css. Everything here
-   EXTENDS the default theme; zinc/emerald utilities keep working while
-   screens migrate. Deliberate deviations from the design package:
-   - the 4.4px spacing scale is not ported (it would repaint every padding
-     and margin utility on unmigrated screens); only the 44px tap target
-     ships, as `tap`.
-   - shadow-sm/md/lg are overridden with the ink-tinted equivalents; the
-     old cool-gray shadows differ imperceptibly on unmigrated screens. */
+/* Ember tokens, from design/EMBER.md. One theme: a cool near-black ground
+   with warm off-white type. Numbers are set in the mono face; everything
+   else in the sans. Terracotta means time or action and nothing else;
+   `overdue` is the only red. */
 @theme {
-  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Caprasimo', serif;
-  --font-body: 'Figtree', system-ui, sans-serif;
+  --color-ground: #15171b;
+  --color-panel: #1b1e23;
+  --color-raised: #22262c;
+  --color-film: #0f1114;
+  --color-line: rgb(233 231 225 / 0.1);
+  --color-line-strong: rgb(233 231 225 / 0.24);
+  --color-text: #e9e7e1;
+  --color-text-2: #a9abaf;
+  --color-text-3: #8b8e94;
+  --color-accent: #ee7a3c;
+  --color-accent-hover: #f4955f;
+  --color-accent-soft: rgb(238 122 60 / 0.16);
+  --color-accent-line: rgb(238 122 60 / 0.38);
+  --color-accent-glow: rgb(238 122 60 / 0.45);
+  --color-accent-ink: #15171b;
+  --color-overdue: #ff9d85;
 
-  --color-ground: #f5ead8;
-  --color-ground-dark: #201e1d;
-  --color-surface: #ebddc5;
-  --color-surface-raised: #f9f4ed;
-  --color-surface-dark: #2e2b25;
-  --color-surface-dark-raised: #474238;
-  --color-ink: #201e1d;
-  --color-ink-inverse: #f5ead8;
+  --font-sans: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  /* Same face as the sans; kept as a named role for numerals and titles so
+     the verify drive can find scores by `.font-display`. */
+  --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
 
-  --color-sand-100: #f9f4ed;
-  --color-sand-200: #eee7db;
-  --color-sand-300: #dcd3c4;
-  --color-sand-400: #c0b6a5;
-  --color-sand-500: #a19786;
-  --color-sand-600: #82796a;
-  --color-sand-700: #645c50;
-  --color-sand-800: #474238;
-  --color-sand-900: #2e2b25;
-
-  --color-clay: #c67139;
-  --color-clay-100: #fff2eb;
-  --color-clay-200: #ffe1d0;
-  --color-clay-300: #ffc6a5;
-  --color-clay-400: #f6a06b;
-  --color-clay-500: #d67f48;
-  --color-clay-600: #b2622d;
-  --color-clay-700: #8c491a;
-  --color-clay-800: #643312;
-  --color-clay-900: #402310;
-
-  --color-sage: #7a8a5e;
-  --color-sage-100: #f0fae1;
-  --color-sage-200: #e1eecc;
-  --color-sage-300: #ccdbb2;
-  --color-sage-400: #aebf92;
-  --color-sage-500: #8fa073;
-  --color-sage-600: #728157;
-  --color-sage-700: #56633f;
-  --color-sage-800: #3d472b;
-  --color-sage-900: #272e1b;
-
-  /* The only red anywhere; reserved for a truly overdue deadline. */
-  --color-overdue: #9c2f25;
-  --color-overdue-dark: #ff9d85;
-
-  --text-micro: 11px;
-  --text-micro--line-height: 16px;
-  --text-micro--letter-spacing: 0.1em;
-  --text-meta: 12.5px;
-  --text-meta--line-height: 18px;
-  --text-detail: 13.5px;
-  --text-detail--line-height: 19px;
-  --text-body: 14.5px;
-  --text-body--line-height: 22px;
-  --text-card: 16px;
-  --text-card--line-height: 21px;
-  --text-card--font-weight: 600;
-  --text-title: 25px;
-  --text-title--line-height: 29px;
-  --text-display: 31px;
-  --text-display--line-height: 35px;
-  --text-score: 24px;
-  --text-score--line-height: 24px;
-  --text-score-lg: 30px;
-  --text-score-lg--line-height: 30px;
+  /* Type roles (EMBER.md §3). Sizes carry their line-height, weight and
+     tracking so a role is one utility. */
+  --text-title: 36px;
+  --text-title--line-height: 0.95;
+  --text-title--font-weight: 800;
+  --text-title--letter-spacing: -0.04em;
+  --text-readout: 20px;
+  --text-readout--line-height: 1.25;
+  --text-readout--font-weight: 600;
+  --text-readout--letter-spacing: -0.01em;
+  --text-row: 15.5px;
+  --text-row--line-height: 1.3;
+  --text-row--font-weight: 600;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-meta: 13px;
+  --text-meta--line-height: 1.4;
+  --text-label: 10.5px;
+  --text-label--line-height: 1;
+  --text-label--font-weight: 500;
+  --text-label--letter-spacing: 0.14em;
+  --text-ledger: 12.5px;
+  --text-ledger--line-height: 1.3;
+  --text-factor: 11px;
+  --text-factor--line-height: 1.6;
+  --text-equation: 12px;
+  --text-equation--line-height: 1;
+  --text-score: 40px;
+  --text-score--line-height: 1;
+  --text-score--font-weight: 700;
+  --text-score--letter-spacing: -0.04em;
+  --text-score-row: 20px;
+  --text-score-row--line-height: 1;
+  --text-score-row--font-weight: 700;
+  --text-score-row--letter-spacing: -0.03em;
+  --text-days: 26px;
+  --text-days--line-height: 1;
+  --text-days--font-weight: 700;
+  --text-days--letter-spacing: -0.04em;
 
   --spacing-tap: 44px;
 
-  --radius-chip: 12px;
-  --radius-ctl: 16px;
-  --radius-card: 24px;
-  --radius-sheet: 28px;
-  --radius-hero: 32px;
   --radius-pill: 999px;
+  --radius-panel: 22px;
+  --radius-inner: 16px;
+  --radius-card: 18px;
+  --radius-screen: 28px;
 
-  --shadow-sm: 0 1px 2px rgba(46, 43, 37, 0.14);
-  --shadow-md: 0 3px 10px rgba(46, 43, 37, 0.16);
-  --shadow-lg: 0 12px 32px rgba(46, 43, 37, 0.22);
-  --shadow-sheet: 0 -12px 32px rgba(46, 43, 37, 0.25);
+  --shadow-lit:
+    0 0 0 1px rgb(238 122 60 / 0.16), 0 36px 70px -34px rgb(238 122 60 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
+  --shadow-frame: 0 40px 80px -40px rgb(0 0 0 / 0.8);
 }
 
 html {
+  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
+  background: var(--color-ground);
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+p {
+  text-wrap: pretty;
 }
 
 ::selection {
-  background: rgba(198, 113, 57, 0.3);
+  background: rgb(238 122 60 / 0.35);
+}
+
+/* Focus is the accent outline, never the default ring. Fields carry their
+   own halo instead so a focused input reads as the lit thing on screen. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+/* The lit dot on the foreground readout. */
+@keyframes fgBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.fg-blink {
+  animation: fgBlink 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-blink {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

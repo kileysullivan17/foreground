@@ -247,3 +247,16 @@ describe('put-off view', () => {
     expect(ranked[0]?.id).toBe(trivialButStale.id)
   })
 })
+
+describe('staleness switch (analytics counterfactual)', () => {
+  it('staleness: false scores every item as if freshly touched', () => {
+    const stale = makeItem({ importance: 4, effort: 'S', lastTouchedAt: iso(-30) })
+    const withS = scoreItem(stale, [stale], { now: NOW })
+    const without = scoreItem(stale, [stale], { now: NOW, staleness: false })
+    expect(withS.staleness?.multiplier).toBe(1.5)
+    expect(without.staleness).toBeNull()
+    expect(without.score).toBe(withS.costOfDelay / withS.size.divisor)
+    // The default is unchanged: omitting the option keeps the multiplier.
+    expect(scoreItem(stale, [stale], { now: NOW }).staleness).not.toBeNull()
+  })
+})

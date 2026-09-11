@@ -3,23 +3,28 @@ import { useCreateItem, useCreateProject, useItems, useProjects, useUpdateItem, 
 import { Segmented } from '../components/Segmented'
 import { DependencyView } from '../components/DependencyView'
 import { QueryStates } from '../components/QueryStates'
+import { daysUntilDeadline } from '../scoring/score'
 import { effortLabels, formatDate, statusLabels } from '../lib/format'
 import type { Area, Effort, Item, Project, Status } from '../types'
 
 const inputCls =
-  'w-full min-h-tap rounded-pill border border-ink/15 bg-surface-raised px-4 text-detail text-ink placeholder:text-sand-600 dark:border-ink-inverse/20 dark:bg-surface-dark-raised dark:text-ink-inverse dark:placeholder:text-sand-400'
+  'w-full min-h-tap rounded-pill border border-line bg-panel px-4 text-[14px] text-text placeholder:text-text-3'
 const smallBtn =
-  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 font-display text-[14.5px] active:scale-95 disabled:opacity-50'
-const clayBtn = `${smallBtn} bg-clay-500 text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300`
-const ghostBtn = `${smallBtn} text-sand-700 hover:bg-ink/5 dark:text-sand-400 dark:hover:bg-ink-inverse/8`
+  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 text-[14px] font-semibold active:translate-y-px disabled:opacity-45'
+const primaryBtn = `${smallBtn} bg-accent text-accent-ink hover:bg-accent-hover`
+const outlineBtn = `${smallBtn} border border-line-strong text-text hover:border-text`
+const ghostBtn = `${smallBtn} text-text-3 hover:text-text`
+const fieldLabel = 'flex items-center gap-2 font-mono text-label uppercase text-text-3'
+const checkboxCls =
+  'size-[22px] flex-none appearance-none rounded-[7px] border border-line-strong bg-panel checked:border-accent checked:bg-accent'
 
-// Status reads in the palette's roles: sage for finished or moving work,
-// clay for in progress, sand for waiting.
+// Status dots: a ring while waiting, the lit accent when in progress, a
+// quiet fill when done, a faint ring when parked.
 const statusDot: Record<Status, string> = {
-  open: 'bg-sand-500',
-  in_progress: 'bg-clay-500 dark:bg-clay-400',
-  done: 'bg-sage-500',
-  parked: 'bg-sand-300 dark:bg-sand-700',
+  open: 'border border-line-strong',
+  in_progress: 'bg-accent shadow-[0_0_8px_var(--color-accent)]',
+  done: 'bg-text-3',
+  parked: 'border border-line',
 }
 
 /** Ids of everything that transitively depends on `id` (kept out of the
@@ -38,6 +43,11 @@ function transitiveDependents(id: string, items: Item[]): Set<string> {
   }
   return result
 }
+
+/** Open work waiting on something unfinished. */
+const isBlocked = (item: Item, all: Item[]) =>
+  (item.status === 'open' || item.status === 'in_progress') &&
+  item.dependsOn.some((id) => all.find((i) => i.id === id)?.status !== 'done')
 
 function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[]; onClose: () => void }) {
   const update = useUpdateItem()
@@ -79,17 +89,17 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
   }
 
   return (
-    <div className="mt-2 space-y-3 rounded-ctl bg-surface-raised p-3 dark:bg-surface-dark-raised/60">
+    <div className="mt-2 space-y-3 rounded-inner bg-raised p-3">
       <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} aria-label="Title" />
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Notes"
         rows={2}
-        className={`${inputCls.replace('rounded-pill', 'rounded-ctl')} py-2.5`}
+        className={`${inputCls.replace('rounded-pill', 'rounded-inner')} py-2.5`}
         aria-label="Notes"
       />
-      <div className="flex flex-wrap items-center gap-3 text-detail">
+      <div className="flex flex-wrap items-center gap-3">
         <Segmented
           label="Effort"
           options={[
@@ -100,7 +110,7 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
           value={effort}
           onChange={setEffort}
         />
-        <label className="flex items-center gap-2 text-sm">
+        <label className={fieldLabel}>
           Importance
           <select
             value={importance}
@@ -116,11 +126,11 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
         </label>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-sm">
+        <label className={fieldLabel}>
           Deadline
           <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={`${inputCls} w-auto`} />
         </label>
-        <label className="flex items-center gap-2 text-sm">
+        <label className={fieldLabel}>
           Status
           <select value={status} onChange={(e) => setStatus(e.target.value as Status)} className={`${inputCls} w-auto`}>
             {Object.entries(statusLabels).map(([v, label]) => (
@@ -134,10 +144,10 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
       <DependencyView item={item} allItems={allItems} />
       {depCandidates.length > 0 && (
         <fieldset>
-          <legend className="text-detail font-semibold">Change what this waits on</legend>
+          <legend className="font-mono text-label uppercase text-text-3">Change what this waits on</legend>
           <div className="mt-1 max-h-52 overflow-y-auto">
             {depCandidates.map((c) => (
-              <label key={c.id} className="flex min-h-tap cursor-pointer items-center gap-3 text-detail">
+              <label key={c.id} className="flex min-h-tap cursor-pointer items-center gap-3 text-[13.5px] text-text">
                 <input
                   type="checkbox"
                   checked={dependsOn.includes(c.id)}
@@ -146,7 +156,7 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
                       e.target.checked ? [...prev, c.id] : prev.filter((d) => d !== c.id),
                     )
                   }
-                  className="size-[22px] flex-none appearance-none rounded-[7px] border-2 border-sand-500 bg-surface-raised checked:border-sage-600 checked:bg-sage-600 dark:border-sand-600 dark:bg-surface-dark-raised dark:checked:border-sage-500 dark:checked:bg-sage-500"
+                  className={checkboxCls}
                 />
                 {c.title}
               </label>
@@ -155,7 +165,7 @@ function ItemEditor({ item, allItems, onClose }: { item: Item; allItems: Item[];
         </fieldset>
       )}
       <div className="flex gap-2">
-        <button type="button" onClick={save} disabled={update.isPending} className={clayBtn}>
+        <button type="button" onClick={save} disabled={update.isPending} className={primaryBtn}>
           Save
         </button>
         <button type="button" onClick={onClose} className={ghostBtn}>
@@ -178,6 +188,7 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
 
   const mine = items.filter((i) => i.projectId === project.id)
   const openCount = mine.filter((i) => i.status === 'open' || i.status === 'in_progress').length
+  const now = new Date()
 
   const addItem = (e: React.FormEvent) => {
     e.preventDefault()
@@ -209,17 +220,17 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
   }
 
   return (
-    <section className="rounded-card bg-surface p-4 dark:bg-surface-dark">
+    <section className="rounded-panel border border-line bg-panel p-4">
       {editingProject ? (
         <div className="space-y-2">
           <input value={name} onChange={(e) => setName(e.target.value)} className={inputCls} aria-label="Project name" />
           <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Goal" className={inputCls} aria-label="Goal" />
-          <label className="flex items-center gap-2 text-sm">
+          <label className={fieldLabel}>
             Target
             <input type="date" value={target} onChange={(e) => setTarget(e.target.value)} className={`${inputCls} w-auto`} />
           </label>
           <div className="flex gap-2">
-            <button type="button" onClick={saveProject} className={clayBtn}>
+            <button type="button" onClick={saveProject} className={primaryBtn}>
               Save
             </button>
             <button type="button" onClick={() => setEditingProject(false)} className={ghostBtn}>
@@ -229,51 +240,67 @@ function ProjectCard({ project, items }: { project: Project; items: Item[] }) {
         </div>
       ) : (
         <button type="button" className="block w-full text-left" onClick={() => setEditingProject(true)}>
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="font-semibold">{project.name}</h3>
-            <span className="text-xs text-sand-700 dark:text-sand-400">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-text">{project.name}</h3>
+            <span className="flex-none font-mono text-[12px] tabular-nums text-text-3">
               {openCount} open{project.targetDate ? ` · target ${formatDate(project.targetDate)}` : ''}
             </span>
           </div>
-          {project.goal && <p className="mt-0.5 text-detail text-sand-700 dark:text-sand-400">{project.goal}</p>}
+          {project.goal && <p className="mt-1 text-[13.5px] leading-[1.45] text-text-2">{project.goal}</p>}
         </button>
       )}
 
-      <ul className="mt-2 divide-y divide-ink/8 dark:divide-ink-inverse/10">
-        {mine.map((item) => (
-          <li key={item.id} className="py-2">
-            <button
-              type="button"
-              className="flex min-h-tap w-full items-center gap-2 text-left"
-              onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
-            >
-              <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[item.status]}`} />
-              <span className={`flex-1 text-sm ${item.status === 'done' ? 'text-sand-600 line-through dark:text-sand-500' : ''}`}>
-                {item.title}
-              </span>
-              <span className="text-xs text-sand-600 dark:text-sand-500">
-                {effortLabels[item.effort][0]}
-                {item.hardDeadline ? ` · ${formatDate(item.hardDeadline)}` : ''}
-              </span>
-            </button>
-            {expandedItem === item.id && (
-              <ItemEditor item={item} allItems={items} onClose={() => setExpandedItem(null)} />
-            )}
-          </li>
-        ))}
+      <ul className="mt-3 divide-y divide-dotted divide-line-strong border-t border-dotted border-line-strong">
+        {mine.map((item) => {
+          const blocked = isBlocked(item, items)
+          const soon =
+            item.hardDeadline !== null &&
+            item.status !== 'done' &&
+            daysUntilDeadline(item.hardDeadline, now) <= 30
+          return (
+            <li key={item.id} className="py-0.5">
+              <button
+                type="button"
+                className="grid min-h-tap w-full grid-cols-[14px_minmax(0,1fr)_auto] items-center gap-x-2.5 text-left"
+                onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
+              >
+                <span className={`size-2 shrink-0 rounded-pill ${statusDot[item.status]}`} />
+                <span
+                  className={`text-[14.5px] leading-[1.3] ${
+                    item.status === 'done'
+                      ? 'text-text-3 line-through'
+                      : blocked
+                        ? 'text-text-3'
+                        : 'text-text'
+                  }`}
+                >
+                  {item.title}
+                </span>
+                <span className={`font-mono text-[12px] tabular-nums ${soon ? 'text-accent' : 'text-text-3'}`}>
+                  {effortLabels[item.effort][0]}
+                  {item.hardDeadline ? ` · ${formatDate(item.hardDeadline)}` : ''}
+                  {blocked ? ' · blocked' : ''}
+                </span>
+              </button>
+              {expandedItem === item.id && (
+                <ItemEditor item={item} allItems={items} onClose={() => setExpandedItem(null)} />
+              )}
+            </li>
+          )
+        })}
       </ul>
 
-      <form onSubmit={addItem} className="mt-2 flex gap-2">
+      <form onSubmit={addItem} className="mt-3 flex gap-2">
         <input
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="Add an item…"
-          className={inputCls}
+          className={`${inputCls} min-h-[42px] bg-raised`}
         />
         <button
           type="submit"
           disabled={!newTitle.trim() || createItem.isPending}
-          className={`${smallBtn} shrink-0 border-[1.5px] border-ink/25 text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8`}
+          className={`${outlineBtn} min-h-[42px] shrink-0`}
         >
           Add
         </button>
@@ -290,7 +317,7 @@ function NewProjectForm({ area }: { area: Area }) {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="flex min-h-tap items-center text-detail font-semibold text-clay-700 dark:text-clay-300">
+      <button type="button" onClick={() => setOpen(true)} className="flex min-h-tap items-center px-1.5 text-[14px] font-semibold text-accent hover:underline">
         + New project
       </button>
     )
@@ -306,11 +333,11 @@ function NewProjectForm({ area }: { area: Area }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-2 rounded-card border-[1.5px] border-dashed border-sand-600 p-3.5 dark:border-sand-500">
+    <form onSubmit={submit} className="space-y-2 rounded-panel border border-dotted border-line-strong p-3.5">
       <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Project name" className={inputCls} />
       <input value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Goal (what does done look like?)" className={inputCls} />
       <div className="flex gap-2">
-        <button type="submit" disabled={!name.trim()} className={clayBtn}>
+        <button type="submit" disabled={!name.trim()} className={primaryBtn}>
           Create
         </button>
         <button type="button" onClick={() => setOpen(false)} className={ghostBtn}>
@@ -333,26 +360,32 @@ export function Projects() {
   ]
 
   return (
-    <main className="mx-auto max-w-lg space-y-6 px-4 pt-4 pb-4">
-      <h1 className="font-display text-display">Projects</h1>
+    <main className="mx-auto max-w-lg space-y-6 px-3.5 pb-4 pt-[18px]">
+      <h1 className="px-1.5 text-title text-text">Projects</h1>
       <QueryStates queries={[projectsQuery, itemsQuery]} loadingLabel="Loading projects…">
       {areas.map(({ area, heading }) => {
         const loose = items.filter((i) => i.area === area && i.projectId === null)
+        const count = projects.filter((p) => p.area === area).length
         return (
           <section key={area} className="space-y-3">
-            <h2 className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">{heading}</h2>
+            <h2 className="flex items-center justify-between px-1.5 font-mono text-label uppercase text-text-3">
+              {heading}
+              <span className="tabular-nums">
+                {count} {count === 1 ? 'project' : 'projects'}
+              </span>
+            </h2>
             {projects
               .filter((p) => p.area === area)
               .map((p) => (
                 <ProjectCard key={p.id} project={p} items={items} />
               ))}
             {loose.length > 0 && (
-              <section className="rounded-card bg-surface p-4 dark:bg-surface-dark">
-                <h3 className="font-semibold text-sand-700 dark:text-sand-400">No project</h3>
-                <ul className="mt-1 divide-y divide-ink/8 dark:divide-ink-inverse/10">
+              <section className="rounded-panel border border-line bg-panel p-4">
+                <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-text-3">No project</h3>
+                <ul className="mt-3 divide-y divide-dotted divide-line-strong border-t border-dotted border-line-strong">
                   {loose.map((item) => (
-                    <li key={item.id} className="flex items-center gap-2 py-2 text-sm">
-                      <span className={`h-2 w-2 shrink-0 rounded-full ${statusDot[item.status]}`} />
+                    <li key={item.id} className="grid min-h-tap grid-cols-[14px_minmax(0,1fr)] items-center gap-x-2.5 text-[14.5px] text-text">
+                      <span className={`size-2 shrink-0 rounded-pill ${statusDot[item.status]}`} />
                       {item.title}
                     </li>
                   ))}

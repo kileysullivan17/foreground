@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { daysSinceTouched, rankByStaleness } from '../scoring/score'
+import { daysSinceTouched, rankByStaleness, stalenessMultiplier } from '../scoring/score'
 import { useItems, useProjects, useTouchItem } from '../hooks/useData'
 import { FilterChips } from '../components/FilterChips'
 import { QueryStates } from '../components/QueryStates'
@@ -10,35 +10,27 @@ type AreaFilter = 'all' | Area
 
 const NO_ITEMS: never[] = []
 
-// Staleness reads as a warm disc, not an alarm: the longer untouched, the
-// warmer the clay. Sand for anything under the boost thresholds.
-function discTone(days: number): { disc: string; num: string; unit: string } {
-  if (days >= 21)
-    return {
-      disc: 'bg-clay-200 dark:bg-clay-900',
-      num: 'text-clay-800 dark:text-clay-300',
-      unit: 'text-clay-700 dark:text-clay-400',
-    }
-  if (days >= 10)
-    return {
-      disc: 'bg-clay-100 dark:bg-clay-900/60',
-      num: 'text-clay-800 dark:text-clay-300',
-      unit: 'text-clay-700 dark:text-clay-400',
-    }
-  return {
-    disc: 'bg-sand-200 dark:bg-surface-dark-raised',
-    num: 'text-sand-800 dark:text-sand-300',
-    unit: 'text-sand-700 dark:text-sand-400',
-  }
-}
+// Staleness is an instrument, not an alarm: the day count lights up in the
+// accent once it passes 21 days, and a 3px gauge at the foot of the row
+// shows how far the multiplier has climbed toward its 1.5 cap.
+const STALENESS_CAP = 1.5
 
-function PutOffRow({ item, projects }: { item: Item; projects: Project[] }) {
+function PutOffRow({
+  item,
+  projects,
+  stalest,
+}: {
+  item: Item
+  projects: Project[]
+  stalest: boolean
+}) {
   const [editing, setEditing] = useState(false)
   const [note, setNote] = useState('')
   const touch = useTouchItem()
   const days = daysSinceTouched(item, new Date())
   const project = projects.find((p) => p.id === item.projectId)
-  const tone = discTone(days)
+  const multiplier = stalenessMultiplier(days)
+  const gauge = Math.max(0, Math.min(1, (multiplier - 1) / (STALENESS_CAP - 1)))
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,41 +43,49 @@ function PutOffRow({ item, projects }: { item: Item; projects: Project[] }) {
   }
 
   return (
-    <li className="rounded-card bg-surface p-3.5 dark:bg-surface-dark">
-      <div className="flex items-center gap-3.5">
-        <span
-          className={`flex size-14 flex-none flex-col items-center justify-center rounded-pill ${tone.disc}`}
-        >
-          <span className={`font-display text-[19px] leading-none tabular-nums ${tone.num}`}>
+    <li className="border-t border-dotted border-line-strong py-[14px]">
+      <div className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-start gap-x-2">
+        <span className="flex items-baseline gap-[3px] pt-px">
+          <span
+            className={`font-display text-days tabular-nums ${
+              days >= 21 ? 'text-accent' : 'text-text'
+            }`}
+          >
             {days}
           </span>
-          <span className={`mt-px text-[8.5px] font-semibold uppercase tracking-[0.09em] ${tone.unit}`}>
-            {days === 1 ? 'day' : 'days'}
-          </span>
+          <span className="font-mono text-[11px] text-text-3">d</span>
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-semibold leading-[1.3] text-ink dark:text-ink-inverse">
-            {item.title}
-          </span>
-          <span className="mt-0.5 block text-meta text-sand-700 dark:text-sand-400">
-            {project?.name ?? 'No project'}
-          </span>
+        <span className="min-w-0 pt-0.5">
+          <span className="block text-row text-text">{item.title}</span>
         </span>
         {!editing && (
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="inline-flex min-h-tap flex-none items-center justify-center rounded-pill bg-sage-200 px-[18px] font-display text-[14px] text-sage-800 hover:bg-sage-300 hover:text-ink active:scale-95 dark:bg-sage-300 dark:text-ink dark:hover:bg-sage-200 dark:hover:text-sage-800"
+            className={`inline-flex min-h-[34px] flex-none items-center justify-center rounded-pill border px-4 font-mono text-label uppercase text-text transition-colors hover:border-text active:translate-y-px ${
+              stalest ? 'border-text' : 'border-line-strong'
+            }`}
           >
             Touch it
           </button>
         )}
       </div>
       {item.lastTouchNote && !editing && (
-        <p className="ml-[70px] mt-2 text-meta italic leading-[1.45] text-sand-700 dark:text-sand-400">
+        <p className="mt-2 pl-[60px] text-[12.5px] leading-[1.45] text-text-2">
           “{item.lastTouchNote}”
         </p>
       )}
+      <div className="mt-2.5 flex items-center gap-3 pl-[60px]">
+        <span className="flex-none font-mono text-[12.5px] text-text-3">
+          {project?.name ?? 'No project'}
+        </span>
+        <span className="h-[3px] min-w-0 flex-1 overflow-hidden rounded-pill bg-line-strong" aria-hidden>
+          <span className="block h-full rounded-pill bg-accent" style={{ width: `${gauge * 100}%` }} />
+        </span>
+        <span className="flex-none font-mono text-[12.5px] font-medium tabular-nums text-accent">
+          ×{multiplier.toFixed(2)}
+        </span>
+      </div>
 
       {editing && (
         <form onSubmit={submit} className="mt-3 flex gap-2">
@@ -94,19 +94,19 @@ function PutOffRow({ item, projects }: { item: Item; projects: Project[] }) {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="One line: where does this stand?"
-            className="min-h-tap min-w-0 flex-1 rounded-pill border border-ink/15 bg-surface-raised px-4 text-detail text-ink placeholder:text-sand-600 dark:border-ink-inverse/20 dark:bg-surface-dark-raised dark:text-ink-inverse dark:placeholder:text-sand-400"
+            className="min-h-tap min-w-0 flex-1 rounded-pill border border-line bg-raised px-4 text-[14px] text-text placeholder:text-text-3"
           />
           <button
             type="submit"
             disabled={!note.trim() || touch.isPending}
-            className="inline-flex min-h-tap flex-none items-center justify-center rounded-pill bg-clay-500 px-5 font-display text-[14px] text-ink hover:bg-clay-400 disabled:opacity-50 dark:bg-clay-400 dark:hover:bg-clay-300"
+            className="inline-flex min-h-tap flex-none items-center justify-center rounded-pill bg-accent px-5 text-[14px] font-semibold text-accent-ink hover:bg-accent-hover active:translate-y-px disabled:opacity-45"
           >
             Save
           </button>
           <button
             type="button"
             onClick={() => setEditing(false)}
-            className="inline-flex min-h-tap flex-none items-center justify-center rounded-pill border-[1.5px] border-ink/25 px-4 font-display text-[14px] text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8"
+            className="inline-flex min-h-tap flex-none items-center justify-center rounded-pill border border-line-strong px-4 text-[14px] font-semibold text-text hover:border-text"
           >
             Cancel
           </button>
@@ -127,14 +127,14 @@ export function PutOff() {
   const shown = stale.filter((i) => area === 'all' || i.area === area)
 
   return (
-    <main className="mx-auto max-w-lg px-3.5 pb-4 pt-3">
+    <main className="mx-auto max-w-lg px-3.5 pb-4 pt-[18px]">
       <div className="px-1.5">
-        <h1 className="font-display text-display">Stuff I've put off</h1>
-        <p className="mt-1 text-[13px] leading-[1.5] text-sand-700 dark:text-sand-400">
+        <h1 className="text-title text-text">Stuff I've put off</h1>
+        <p className="mt-3 text-body text-text-2">
           Stalest first. “Touch it” resets the clock and keeps a one-line note of where things
           stand.
         </p>
-        <div className="mb-3.5 mt-3">
+        <div className="mb-[18px] mt-4 flex items-center justify-between gap-3">
           <FilterChips
             label="Area"
             options={[
@@ -145,13 +145,16 @@ export function PutOff() {
             value={area}
             onChange={setArea}
           />
+          <span className="font-mono text-label uppercase tabular-nums text-text-3">
+            {shown.length} open
+          </span>
         </div>
       </div>
 
       <QueryStates queries={[itemsQuery, projectsQuery]} loadingLabel="Sorting by staleness…">
-        <ul className="space-y-2.5">
-          {shown.map((item) => (
-            <PutOffRow key={item.id} item={item} projects={projects} />
+        <ul className="mx-1.5 border-b border-dotted border-line-strong">
+          {shown.map((item, i) => (
+            <PutOffRow key={item.id} item={item} projects={projects} stalest={i === 0} />
           ))}
         </ul>
         {shown.length === 0 && (

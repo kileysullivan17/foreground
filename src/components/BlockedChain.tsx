@@ -1,8 +1,8 @@
 import type { Item } from '../types'
 
-// The 1h treatment for a blocked card: the dependency chain replaces the
-// score. "Waits on" walks unfinished dependencies down to the actionable
-// root, which gets the one warm highlight and a link back into the ranking;
+// The treatment for a blocked row: the dependency chain replaces the score.
+// "Waits on" walks unfinished dependencies down to the actionable root,
+// which reads in plain text with an accent link back into the ranking;
 // "Would unblock" lists the open items waiting on this one, each with the
 // +8 its completion would feed their score. Pure presentation over the
 // same dependency data DependencyView reads.
@@ -14,7 +14,7 @@ const LockIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2.75"
+    strokeWidth="2.5"
     strokeLinecap="round"
     strokeLinejoin="round"
     aria-hidden
@@ -26,7 +26,7 @@ const LockIcon = () => (
 
 export function BlockedTag() {
   return (
-    <span className="inline-flex flex-none items-center gap-1.5 rounded-pill bg-sand-200 px-2.5 py-[3px] text-micro font-semibold normal-case tracking-normal text-sand-800 dark:bg-surface-dark-raised dark:text-sand-300">
+    <span className="inline-flex h-[26px] flex-none items-center gap-1.5 rounded-pill bg-raised px-2.5 font-mono text-label uppercase text-text-2">
       <LockIcon />
       blocked
     </span>
@@ -77,20 +77,20 @@ function ChainNode({
     return (
       <div className="flex gap-3">
         <span className="flex w-3.5 flex-none flex-col items-center" aria-hidden>
-          <span className="mt-3.5 size-2.5 rounded-pill bg-clay dark:bg-clay-400" />
-          {!last && <span className="my-[3px] w-0.5 flex-1 bg-ink/20 dark:bg-ink-inverse/20" />}
+          <span className="mt-[5px] size-2.5 rounded-pill bg-accent shadow-[0_0_8px_var(--color-accent)]" />
+          {!last && <span className="my-[3px] w-px flex-1 bg-line-strong" />}
         </span>
-        <div className={`min-w-0 flex-1 rounded-ctl bg-clay-100 px-3 py-2.5 dark:bg-clay-900 ${last ? '' : 'mb-3'}`}>
-          <p className="text-[14px] font-semibold leading-[1.35] text-ink dark:text-ink-inverse">
+        <div className={`min-w-0 flex-1 ${last ? '' : 'pb-3'}`}>
+          <p className="text-[14px] font-semibold leading-[1.35] text-text">
             {entry.item.title}
           </p>
-          <p className="mt-[3px] flex items-center gap-1.5 text-meta text-sand-700 dark:text-sand-400">
+          <p className="mt-[3px] flex items-center gap-1.5 text-meta text-text-2">
             actionable now
             {rank !== undefined && (
               <button
                 type="button"
                 onClick={() => onJump(entry.item.id)}
-                className="relative ml-auto min-h-8 text-xs font-semibold text-clay-700 before:absolute before:-inset-x-2 before:-inset-y-1.5 before:content-[''] hover:underline dark:text-clay-300"
+                className="relative ml-auto min-h-8 font-mono text-[11px] font-medium text-accent before:absolute before:-inset-x-2 before:-inset-y-1.5 before:content-[''] hover:underline"
               >
                 ranked #{rank} →
               </button>
@@ -103,14 +103,14 @@ function ChainNode({
   return (
     <div className="flex gap-3">
       <span className="flex w-3.5 flex-none flex-col items-center" aria-hidden>
-        <span className="mt-[5px] size-2.5 rounded-pill border-2 border-sand-600 dark:border-sand-500" />
-        {!last && <span className="my-[3px] w-0.5 flex-1 bg-ink/20 dark:bg-ink-inverse/20" />}
+        <span className="mt-[5px] size-2.5 rounded-pill border border-line-strong" />
+        {!last && <span className="my-[3px] w-px flex-1 bg-line-strong" />}
       </span>
       <div className="pb-3">
-        <p className="text-[14px] font-semibold leading-[1.35] text-ink dark:text-ink-inverse">
+        <p className="text-[14px] font-semibold leading-[1.35] text-text-2">
           {entry.item.title}
         </p>
-        <p className="text-meta text-sand-700 dark:text-sand-400">next in line, itself waiting</p>
+        <p className="text-meta text-text-3">next in line, itself waiting</p>
       </div>
     </div>
   )
@@ -137,7 +137,7 @@ export function BlockedChain({
 
   return (
     <div>
-      <p className="mb-2 mt-3.5 text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
+      <p className="mb-2.5 mt-3.5 font-mono text-label uppercase text-text-3">
         Waits on
       </p>
       <div className="flex flex-col">
@@ -153,17 +153,17 @@ export function BlockedChain({
       </div>
       {wouldUnblock.length > 0 && (
         <>
-          <div className="mb-2.5 mt-3 border-t-[1.5px] border-dotted border-ink/25 dark:border-ink-inverse/25" />
-          <p className="mb-2 text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
+          <div className="mb-3 mt-3 border-t border-dotted border-line-strong" />
+          <p className="mb-2.5 font-mono text-label uppercase text-text-3">
             Would unblock
           </p>
           <div className="flex flex-col gap-[7px]">
             {wouldUnblock.map((i) => (
               <div key={i.id} className="flex items-baseline gap-2.5">
-                <span className="min-w-0 flex-1 text-detail text-ink dark:text-ink-inverse">
+                <span className="min-w-0 flex-1 text-[13.5px] text-text">
                   {i.title}
                 </span>
-                <span className="flex-none text-[13px] font-bold tabular-nums text-sage-700 dark:text-sage-400">
+                <span className="flex-none font-mono text-[12.5px] tabular-nums text-text">
                   +8
                 </span>
               </div>
@@ -171,7 +171,7 @@ export function BlockedChain({
           </div>
         </>
       )}
-      <p className="mt-3 text-xs leading-[1.5] text-sand-700 dark:text-sand-400">
+      <p className="mt-3 text-[12px] leading-[1.5] text-text-3">
         Blocked items keep their math: they just wait their turn instead of nagging.
       </p>
     </div>

@@ -1,27 +1,29 @@
 import type { Item, Status } from '../types'
 import { useSetStatus } from '../hooks/useData'
 
-// One-tap status changes as Organic pills. Which buttons show depends on
-// where the item is. 'foreground' sits on the ink panel (dark ground in the
-// light theme, cream in the dark theme); 'card' sits on a queue card.
+// One-tap status changes as Ember pills. Terracotta means action, so Start
+// is the one filled button; Done is outlined in plain text (white = flow)
+// and Park is a ghost. 'foreground' is the 44px row inside the lit readout;
+// 'card' is the 40px row inside an expanded queue row, where Start drops
+// to the soft tint so only one thing on screen is lit.
 
 type Context = 'foreground' | 'card'
 
 const pill =
-  'inline-flex min-h-tap items-center justify-center rounded-pill font-display active:scale-95 transition-transform disabled:opacity-50'
+  'inline-flex items-center justify-center rounded-pill font-semibold transition-transform active:translate-y-px disabled:opacity-45'
 
-const tones: Record<Context, { start: string; done: string; park: string; text: string }> = {
+const tones: Record<Context, { start: string; done: string; park: string; size: string }> = {
   foreground: {
-    start: 'bg-clay-400 text-ink hover:bg-clay-300 dark:bg-clay-500 dark:hover:bg-clay-400',
-    done: 'bg-sage-300 text-ink hover:bg-sage-200 dark:bg-sage-200 dark:text-sage-800 dark:hover:bg-sage-300 dark:hover:text-ink',
-    park: 'border-[1.5px] border-sand-700 text-ink-inverse hover:bg-ink-inverse/8 dark:border-ink/25 dark:text-ink dark:hover:bg-ink/6',
-    text: 'text-[15px]',
+    start: 'bg-accent text-accent-ink hover:bg-accent-hover',
+    done: 'border border-text text-text hover:bg-line',
+    park: 'text-text-3 hover:text-text',
+    size: 'min-h-tap text-[14px]',
   },
   card: {
-    start: 'bg-clay-500 text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300',
-    done: 'bg-sage-200 text-sage-800 hover:bg-sage-300 hover:text-ink dark:bg-sage-300 dark:text-ink dark:hover:bg-sage-200 dark:hover:text-sage-800',
-    park: 'border-[1.5px] border-ink/25 text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8',
-    text: 'text-[14.5px]',
+    start: 'bg-accent-soft text-accent hover:bg-accent-line',
+    done: 'border border-text text-text hover:bg-line',
+    park: 'text-text-3 hover:text-text',
+    size: 'min-h-10 text-[13px]',
   },
 }
 
@@ -42,7 +44,7 @@ export function StatusActions({
     return (
       <button
         type="button"
-        className={`${pill} ${t.park} ${t.text} px-5`}
+        className={`${pill} border border-line-strong text-text hover:border-text ${t.size} px-5`}
         onClick={() => move('open')}
       >
         Reopen
@@ -55,16 +57,16 @@ export function StatusActions({
       {item.status === 'open' && (
         <button
           type="button"
-          className={`${pill} ${t.start} ${t.text} flex-[1.2]`}
+          className={`${pill} ${t.start} ${t.size} flex-[1.2]`}
           onClick={() => move('in_progress')}
         >
           Start
         </button>
       )}
-      <button type="button" className={`${pill} ${t.done} ${t.text} flex-1`} onClick={() => move('done')}>
+      <button type="button" className={`${pill} ${t.done} ${t.size} flex-1`} onClick={() => move('done')}>
         Done
       </button>
-      <button type="button" className={`${pill} ${t.park} ${t.text} flex-[0.9]`} onClick={() => move('parked')}>
+      <button type="button" className={`${pill} ${t.park} ${t.size} flex-[0.9]`} onClick={() => move('parked')}>
         Park
       </button>
     </div>

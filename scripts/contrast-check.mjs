@@ -1,7 +1,8 @@
-// WCAG contrast audit for the Organic theme (F10). Checks every text/background
-// pair the design uses at small sizes (< 18.66px bold / 24px regular), in both
-// themes. Semi-transparent ledger insets are composited onto their grounds
-// before measuring. Exits 1 if any pair lands under 4.5:1.
+// WCAG contrast audit for the Ember theme (design/EMBER.md §2). Checks every
+// text/background pair the design uses at small sizes (< 18.66px bold /
+// 24px regular). Semi-transparent fills (accent-soft, raised chips on the
+// panel) are composited onto their grounds before measuring. Exits 1 if any
+// pair lands under 4.5:1.
 //
 //   node scripts/contrast-check.mjs
 
@@ -31,63 +32,42 @@ const ratio = (a, b) => {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-// Composited insets: the score ledger sits on a translucent panel.
-const inkLedger = over('#f5ead8', 0.08, '#201e1d') // ledger on the ink panel
-const darkCardLedger = over('#f5ead8', 0.06, '#2e2b25') // ledger on a dark queue card
-const invertedLedger = over('#201e1d', 0.06, '#f5ead8') // ledger on the cream panel (dark theme)
+const ground = '#15171b'
+const panel = '#1b1e23'
+const raised = '#22262c'
+const text = '#e9e7e1'
+const text2 = '#a9abaf'
+const text3 = '#8b8e94'
+const accent = '#ee7a3c'
+const accentInk = '#15171b'
+const overdue = '#ff9d85'
+
+// Composited fills: the soft accent tint on the panel (WSJF chip on a
+// story card) and on the ground (Start inside an expanded queue row).
+const softOnPanel = over(accent, 0.16, panel)
+const softOnGround = over(accent, 0.16, ground)
+const lineOnGround = over(text, 0.1, ground) // the Raw capture chip
 
 const pairs = [
-  // — light theme —
-  ['ink / ground', '#201e1d', '#f5ead8'],
-  ['ink / surface card', '#201e1d', '#ebddc5'],
-  ['ink / raised ledger', '#201e1d', '#f9f4ed'],
-  ['sand-700 meta / ground', '#645c50', '#f5ead8'],
-  ['sand-700 meta / surface card', '#645c50', '#ebddc5'],
-  ['sand-700 meta / raised ledger', '#645c50', '#f9f4ed'],
-  ['sand-800 chip text / ground', '#474238', '#f5ead8'],
-  ['clay-700 factor / raised ledger', '#8c491a', '#f9f4ed'],
-  ['clay-700 link / ground', '#8c491a', '#f5ead8'],
-  ['sage-700 factor / raised ledger', '#56633f', '#f9f4ed'],
-  ['ink / clay-500 button', '#201e1d', '#d67f48'],
-  ['ink / clay-400 button hover', '#201e1d', '#f6a06b'],
-  ['sage-800 / sage-200 button', '#3d472b', '#e1eecc'],
-  ['sage-800 / sage-100 note', '#3d472b', '#f0fae1'],
-  ['clay-800 / clay-100 chip', '#643312', '#fff2eb'],
-  ['clay-800 / clay-200 disc', '#643312', '#ffe1d0'],
-  ['overdue / raised ledger', '#9c2f25', '#f9f4ed'],
-  ['overdue / surface card', '#9c2f25', '#ebddc5'],
-  // — ink foreground panel (light theme) —
-  ['cream / ink panel', '#f5ead8', '#201e1d'],
-  ['sand-500 meta / ink panel', '#a19786', '#201e1d'],
-  ['sand-400 meta / ink panel', '#c0b6a5', '#201e1d'],
-  ['clay-300 kicker / ink panel', '#ffc6a5', '#201e1d'],
-  ['sage-300 factor / ink panel', '#ccdbb2', '#201e1d'],
-  ['cream / ink ledger', '#f5ead8', inkLedger],
-  ['sand-500 meta / ink ledger', '#a19786', inkLedger],
-  ['clay-300 factor / ink ledger', '#ffc6a5', inkLedger],
-  ['sage-300 factor / ink ledger', '#ccdbb2', inkLedger],
-  ['sand-400 divisor / ink ledger', '#c0b6a5', inkLedger],
-  // — dark theme —
-  ['cream / ink ground', '#f5ead8', '#201e1d'],
-  ['cream / dark card', '#f5ead8', '#2e2b25'],
-  ['sand-400 meta / dark card', '#c0b6a5', '#2e2b25'],
-  ['sand-300 chip text / ink ground', '#dcd3c4', '#201e1d'],
-  ['clay-400 factor / dark ledger', '#f6a06b', darkCardLedger],
-  ['sage-400 factor / dark ledger', '#aebf92', darkCardLedger],
-  ['sand-400 meta / dark ledger', '#c0b6a5', darkCardLedger],
-  ['cream / dark ledger', '#f5ead8', darkCardLedger],
-  ['ink / clay-400 button (dark)', '#201e1d', '#f6a06b'],
-  ['ink / sage-300 button (dark)', '#201e1d', '#ccdbb2'],
-  ['overdue-dark / dark card', '#ff9d85', '#2e2b25'],
-  ['overdue-dark / ink ground', '#ff9d85', '#201e1d'],
-  // — cream foreground panel (dark theme) —
-  ['ink / cream panel', '#201e1d', '#f5ead8'],
-  ['sand-700 meta / cream panel', '#645c50', '#f5ead8'],
-  ['clay-700 kicker / cream panel', '#8c491a', '#f5ead8'],
-  ['ink / inverted ledger', '#201e1d', invertedLedger],
-  ['sand-700 meta / inverted ledger', '#645c50', invertedLedger],
-  ['clay-700 factor / inverted ledger', '#8c491a', invertedLedger],
-  ['sage-700 factor / inverted ledger', '#56633f', invertedLedger],
+  ['text / ground', text, ground],
+  ['text / panel', text, panel],
+  ['text / raised', text, raised],
+  ['text-2 body / ground', text2, ground],
+  ['text-2 body / panel', text2, panel],
+  ['text-2 detail / raised ledger', text2, raised],
+  ['text-3 mono label / ground', text3, ground],
+  ['text-3 mono label / panel', text3, panel],
+  ['text-3 mono label / raised', text3, raised],
+  ['accent / ground', accent, ground],
+  ['accent / panel', accent, panel],
+  ['accent / raised ledger', accent, raised],
+  ['accent / soft tint on panel', accent, softOnPanel],
+  ['accent / soft tint on ground', accent, softOnGround],
+  ['accent-ink / accent button', accentInk, accent],
+  ['accent-ink / accent-hover button', accentInk, '#f4955f'],
+  ['overdue / panel', overdue, panel],
+  ['overdue / raised ledger', overdue, raised],
+  ['text / line chip on ground', text, lineOnGround],
 ]
 
 let failed = 0
