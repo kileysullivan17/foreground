@@ -5,11 +5,13 @@ import type { Item, Status } from '../types'
 // recursion safe even though the editor prevents cycles. No graph library:
 // a nested list stays readable at 390px, an edge diagram would not.
 
+// Status dots: a ring at rest, lit accent when in progress, filled quiet
+// when done, a faint ring when parked.
 const dot: Record<Status, string> = {
-  open: 'bg-sand-500',
-  in_progress: 'bg-clay-500 dark:bg-clay-400',
-  done: 'bg-sage-500',
-  parked: 'bg-sand-300 dark:bg-sand-700',
+  open: 'border border-line-strong',
+  in_progress: 'bg-accent shadow-[0_0_8px_var(--color-accent)]',
+  done: 'bg-text-3',
+  parked: 'border border-line',
 }
 
 function related(item: Item, all: Item[], dir: 'up' | 'down'): Item[] {
@@ -40,12 +42,12 @@ function Branch({ node }: { node: DepNode }) {
   const done = node.item.status === 'done'
   return (
     <li>
-      <span className="flex items-center gap-2 text-sm">
-        <span className={`h-2 w-2 shrink-0 rounded-full ${dot[node.item.status]}`} />
-        <span className={done ? 'text-sand-600 line-through dark:text-sand-500' : ''}>{node.item.title}</span>
+      <span className="flex items-center gap-2 text-[13.5px] text-text-2">
+        <span className={`size-2 shrink-0 rounded-pill ${dot[node.item.status]}`} />
+        <span className={done ? 'text-text-3 line-through' : ''}>{node.item.title}</span>
       </span>
       {node.children.length > 0 && (
-        <ul className="ml-[3px] mt-1 space-y-1 border-l border-ink/12 pl-4 dark:border-ink-inverse/15">
+        <ul className="ml-[3px] mt-1 space-y-1 border-l border-line pl-4">
           {node.children.map((child) => (
             <Branch key={child.item.id} node={child} />
           ))}
@@ -72,8 +74,8 @@ function Direction({
   const tree = buildTree(roots, all, dir, visited)
   return (
     <div>
-      <h4 className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">{heading}</h4>
-      <ul className="mt-1 space-y-1">
+      <h4 className="font-mono text-label uppercase text-text-3">{heading}</h4>
+      <ul className="mt-1.5 space-y-1">
         {tree.map((node) => (
           <Branch key={node.item.id} node={node} />
         ))}

@@ -7,8 +7,9 @@ interface FilterChipsProps<T extends string> {
   label?: string
 }
 
-/** Pill-shaped filter chips (the Organic replacement for the old segmented
- *  control on list screens). Radio semantics, 38px minimum height. */
+/** The Area filter on list screens: a segmented pill group (outer pill on
+ *  a `line-strong` border, 34px options, the active one on the raised
+ *  fill). Mono uppercase labels; radio semantics. */
 export function FilterChips<T extends string>({
   options,
   value,
@@ -16,7 +17,11 @@ export function FilterChips<T extends string>({
   label,
 }: FilterChipsProps<T>) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1.5">
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="inline-flex rounded-pill border border-line-strong p-[3px]"
+    >
       {options.map((opt) => {
         const active = opt.value === value
         return (
@@ -26,10 +31,8 @@ export function FilterChips<T extends string>({
             role="radio"
             aria-checked={active}
             onClick={() => onChange(opt.value)}
-            className={`relative inline-flex min-h-[38px] items-center gap-1.5 rounded-pill px-4 text-[13.5px] before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
-              active
-                ? 'bg-clay-500 font-semibold text-ink dark:bg-clay-400'
-                : 'border border-ink/20 text-sand-800 hover:bg-ink/5 dark:border-ink-inverse/25 dark:text-sand-300 dark:hover:bg-ink-inverse/8'
+            className={`relative inline-flex min-h-[34px] items-center gap-1.5 rounded-pill px-4 font-mono text-label uppercase transition-colors before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
+              active ? 'bg-raised text-text' : 'text-text-3 hover:text-text'
             }`}
           >
             {opt.icon}

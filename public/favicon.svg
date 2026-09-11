@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- Foreground mark: the vivid circle sits in front of the faded one. -->
-  <rect width="48" height="48" rx="10" fill="#18181b"/>
-  <circle cx="31" cy="18" r="9" fill="#3f3f46"/>
-  <circle cx="21" cy="27" r="12" fill="#818cf8"/>
+  <!-- Foreground mark: the lit circle sits in front of the faded one. -->
+  <rect width="48" height="48" rx="10" fill="#15171b"/>
+  <circle cx="31" cy="18" r="9" fill="#8b8e94"/>
+  <circle cx="21" cy="27" r="12" fill="#ee7a3c"/>
 </svg>

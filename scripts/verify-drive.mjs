@@ -1,9 +1,11 @@
 // Drives the planner app end-to-end in headless Chromium at phone size.
 // Usage: npm run dev -- --port 5199, then `node scripts/verify-drive.mjs`.
 // SHOTS=<dir> controls where screenshots land (default cwd).
-// Selectors follow the Organic redesign: rank #1 lives in the foreground
-// panel (section[aria-label]), the queue is main > ul, and story moves go
-// through a pick-then-confirm flow in the sheet.
+// Selectors follow the Ember design (design/EMBER.md): rank #1 lives in the
+// lit foreground panel (section[aria-label]), the queue is main > ul with
+// dotted-rule rows, titles carry the .text-row role, scores .font-display,
+// the collapsed factor line .text-factor, and story moves go through a
+// pick-then-confirm flow in the sheet.
 import { chromium } from 'playwright'
 
 const BASE = 'http://localhost:5199'
@@ -24,14 +26,14 @@ const readyCards = () =>
       out.push({
         title: fg.querySelector('h2')?.textContent,
         score: fg.querySelector('.font-display.tabular-nums')?.textContent,
-        factors: [...fg.querySelectorAll('.rounded-ctl > div')].map((d) => d.textContent?.trim()),
+        factors: [...fg.querySelectorAll('.rounded-inner > div')].map((d) => d.textContent?.trim()),
       })
     }
     for (const li of document.querySelectorAll('main > ul > li')) {
       out.push({
-        title: li.querySelector('.text-card')?.textContent,
+        title: li.querySelector('.text-row')?.textContent,
         score: li.querySelector('.font-display.tabular-nums')?.textContent,
-        factors: [...li.querySelectorAll('span.truncate')].map((s) => s.textContent?.trim()),
+        factors: [...li.querySelectorAll('span.text-factor')].map((s) => s.textContent?.trim()),
       })
     }
     return out
@@ -94,21 +96,21 @@ await page.waitForSelector('main ul > li')
 let staleRows = await page.$$eval('main ul > li', (lis) =>
   lis.slice(0, 3).map(
     (li) =>
-      `${li.querySelector('.flex-1 .font-semibold')?.textContent} | ${li.querySelector('.font-display')?.textContent} days`,
+      `${li.querySelector('.text-row')?.textContent} | ${li.querySelector('.font-display')?.textContent} days`,
   ),
 )
 console.log('STEP5 stalest3:', JSON.stringify(staleRows, null, 1))
 await page.screenshot({ path: `${SHOTS}/5-putoff.png` })
 
-const staleTop = await page.$eval('main ul > li .flex-1 .font-semibold', (h) => h.textContent)
+const staleTop = await page.$eval('main ul > li .text-row', (h) => h.textContent)
 await page.getByRole('button', { name: 'Touch it' }).first().click()
 await page.getByPlaceholder(/where does this stand/).fill('Called the first contractor back; two more quotes booked for Tuesday')
 await page.getByRole('button', { name: 'Save' }).click()
 await page.waitForTimeout(300)
-staleRows = await page.$$eval('main ul > li', (lis) => lis.slice(0, 2).map((li) => li.querySelector('.flex-1 .font-semibold')?.textContent))
+staleRows = await page.$$eval('main ul > li', (lis) => lis.slice(0, 2).map((li) => li.querySelector('.text-row')?.textContent))
 console.log('STEP5 touched:', staleTop, '→ new top:', JSON.stringify(staleRows))
 const touchedNow = await page.$$eval('main ul > li', (lis, t) => {
-  const row = lis.find((li) => li.querySelector('.flex-1 .font-semibold')?.textContent === t)
+  const row = lis.find((li) => li.querySelector('.text-row')?.textContent === t)
   return row?.textContent
 }, staleTop)
 console.log('STEP5 touched row now:', touchedNow?.slice(0, 160))
@@ -196,14 +198,14 @@ console.log('STEP11 draft in story form:', draftTitle.startsWith('As a '))
 await page.screenshot({ path: `${SHOTS}/11-groom-draft.png` })
 await page.getByRole('button', { name: 'Accept draft' }).click()
 await page.waitForTimeout(400)
-const groomedChip = await page.locator('[role="dialog"] span.bg-sand-200').first().textContent()
+const groomedChip = await page.locator('[role="dialog"] span.bg-raised').first().textContent()
 console.log('STEP11 status after accept:', groomedChip)
 
 // ---- Step 12: move between columns (pick a destination, then confirm) ----
 await page.getByRole('radio', { name: 'In progress' }).click()
 await page.getByRole('button', { name: 'Move to In progress' }).click()
 await page.waitForTimeout(300)
-const movedChip = await page.locator('[role="dialog"] span.bg-sand-200').first().textContent()
+const movedChip = await page.locator('[role="dialog"] span.bg-raised').first().textContent()
 console.log('STEP12 status after move:', movedChip)
 await page.getByRole('button', { name: 'Close', exact: true }).click()
 await page.waitForTimeout(200)

@@ -113,14 +113,21 @@ function sizeComponent(item: Item, quickWins: boolean): { divisor: number; label
 const STALENESS_GRACE_DAYS = 3
 const STALENESS_CAP = 1.5
 
+/** The staleness multiplier for a count of untouched days: 1 inside the
+ *  grace window, then 1 + days/60, capped. Exported so the Put off gauge
+ *  reads the same curve the ranking uses. */
+export function stalenessMultiplier(days: number): number {
+  if (days <= STALENESS_GRACE_DAYS) return 1
+  return Math.round(Math.min(STALENESS_CAP, 1 + days / 60) * 100) / 100
+}
+
 function stalenessComponent(
   item: Item,
   now: Date,
 ): { multiplier: number; label: string } | null {
   const days = daysSinceTouched(item, now)
   if (days <= STALENESS_GRACE_DAYS) return null // recently touched: no boost, no label noise
-  const multiplier = Math.round(Math.min(STALENESS_CAP, 1 + days / 60) * 100) / 100
-  return { multiplier, label: `Untouched for ${days} days` }
+  return { multiplier: stalenessMultiplier(days), label: `Untouched for ${days} days` }
 }
 
 export function scoreItem(item: Item, allItems: Item[], opts: ScoreOptions = {}): ScoredItem {

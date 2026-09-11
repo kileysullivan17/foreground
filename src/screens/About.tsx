@@ -16,14 +16,16 @@ export function About() {
     startTour()
   }
 
+  const lead = 'font-semibold text-text'
+
   return (
-    <main className="mx-auto max-w-lg px-5 pb-8 pt-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h1 className="font-display text-display">About Foreground</h1>
+    <main className="mx-auto max-w-lg px-5 pb-8 pt-[18px]">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <h1 className="text-title text-text">About Foreground</h1>
         <button
           type="button"
           onClick={takeTour}
-          className="inline-flex min-h-9 items-center gap-1.5 rounded-pill bg-clay-500 px-3.5 text-[12.5px] font-semibold text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300"
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-pill bg-accent px-3.5 text-[12.5px] font-semibold text-accent-ink hover:bg-accent-hover active:translate-y-px"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M5 12h14" />
@@ -33,7 +35,7 @@ export function About() {
         </button>
       </div>
 
-      <section className="mt-4 space-y-4 text-detail leading-relaxed text-sand-800 dark:text-sand-300">
+      <section className="mt-5 space-y-4 text-[14px] leading-[1.6] text-text-2">
         <p>
           Foreground is a personal prioritization tool. It holds every open project and task across
           work and home in one place and answers one question on demand: what should I work on right
@@ -41,14 +43,14 @@ export function About() {
           attention, and it treats the work you keep putting off as a real signal instead of letting
           it sink quietly to the bottom of a list.
         </p>
-        <p className="rounded-ctl bg-clay-100 px-3.5 py-3 text-sand-800 dark:bg-surface-dark-raised dark:text-sand-300">
+        <p className="rounded-inner border border-line bg-panel px-3.5 py-3 text-text-2">
           Everything on this site is a live, interactive demo. The data is sample data seeded into
           your browser, so you can rank, edit, complete, and import freely without touching anything
           real or anyone else's copy.
         </p>
 
         <p>
-          <span className="font-semibold text-ink dark:text-ink-inverse">How it ranks (What now).</span>{' '}
+          <span className={lead}>How it ranks (What now).</span>{' '}
           The home screen orders your open work by a Weighted Shortest Job First (WSJF) score,
           adapted for one person. Cost of delay comes from deadline urgency, the importance you set,
           how much other work an item unblocks, and a small momentum nudge for anything already
@@ -60,7 +62,7 @@ export function About() {
         </p>
 
         <p>
-          <span className="font-semibold text-ink dark:text-ink-inverse">What you keep avoiding (Put off).</span>{' '}
+          <span className={lead}>What you keep avoiding (Put off).</span>{' '}
           A second view sorts by staleness alone, stalest first, so slow-moving work surfaces rather
           than hides. Logging a one-line note about where a thing stands resets its clock and records
           where you left it. Treating staleness as a first-class input is the piece most
@@ -68,14 +70,14 @@ export function About() {
         </p>
 
         <p>
-          <span className="font-semibold text-ink dark:text-ink-inverse">Projects.</span> Work and
+          <span className={lead}>Projects.</span> Work and
           home projects group their items under a goal and an optional target date. Items can depend
           on each other, and the ranking reads those dependencies, so a blocked item never tops the
           list and whatever would unblock the most earns its place.
         </p>
 
         <p>
-          <span className="font-semibold text-ink dark:text-ink-inverse">The product board (Product).</span>{' '}
+          <span className={lead}>The product board (Product).</span>{' '}
           This is where a product reviewer can inspect the practice instead of taking it on faith.
           The app manages its own roadmap as a groomed backlog on a kanban board: user-story tickets
           in standard form, each with acceptance criteria, an effort estimate in story points, and
@@ -87,7 +89,7 @@ export function About() {
         </p>
 
         <p>
-          <span className="font-semibold text-ink dark:text-ink-inverse">How it is built.</span>{' '}
+          <span className={lead}>How it is built.</span>{' '}
           Foreground is mobile-first React with strict TypeScript, styled with Tailwind and served
           over a swappable data layer that runs on browser storage by default and Supabase when
           configured. The scoring engine is unit tested, every release is verified by driving the

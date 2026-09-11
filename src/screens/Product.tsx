@@ -21,11 +21,16 @@ const COLUMNS: { status: StoryStatus; label: string }[] = [
 ]
 
 const inputCls =
-  'w-full min-h-tap rounded-pill border border-ink/15 bg-surface-raised px-4 text-detail text-ink placeholder:text-sand-600 dark:border-ink-inverse/20 dark:bg-surface-dark-raised dark:text-ink-inverse dark:placeholder:text-sand-400'
+  'w-full min-h-tap rounded-pill border border-line bg-panel px-4 text-[14px] text-text placeholder:text-text-3'
 const smallBtn =
-  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 font-display text-[14.5px] active:scale-95 disabled:opacity-50'
-const clayBtn = `${smallBtn} bg-clay-500 text-ink hover:bg-clay-400 dark:bg-clay-400 dark:hover:bg-clay-300`
-const outlineBtn = `${smallBtn} border-[1.5px] border-ink/25 text-ink hover:bg-ink/6 dark:border-ink-inverse/30 dark:text-ink-inverse dark:hover:bg-ink-inverse/8`
+  'inline-flex min-h-tap items-center justify-center rounded-pill px-5 text-[14px] font-semibold active:translate-y-px disabled:opacity-45'
+const primaryBtn = `${smallBtn} bg-accent text-accent-ink hover:bg-accent-hover`
+const outlineBtn = `${smallBtn} border border-line-strong text-text hover:border-text`
+// 26px mono chips: the WSJF score in the soft accent, everything else raised.
+const chip = 'inline-flex h-[26px] items-center gap-1.5 rounded-pill px-2.5 font-mono text-label uppercase tabular-nums'
+const labelCls = 'font-mono text-label uppercase text-text-3'
+const checkboxCls =
+  'size-[22px] flex-none appearance-none rounded-[7px] border border-line-strong bg-raised checked:border-accent checked:bg-accent'
 
 // Each draft names its origin honestly: the model, the offline stub, or the
 // stub served because a live call failed.
@@ -38,7 +43,7 @@ const draftSourceLabel: Record<GroomDraft['source'], string> = {
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 2.75,
+  strokeWidth: 2.5,
   strokeLinecap: 'round',
   strokeLinejoin: 'round',
 } as const
@@ -58,14 +63,14 @@ const TargetIcon = () => (
   </svg>
 )
 const SparkIcon = () => (
-  <svg className="mt-px flex-none" width="14" height="14" viewBox="0 0 24 24" {...stroke} aria-hidden>
+  <svg className="mt-px flex-none text-accent" width="14" height="14" viewBox="0 0 24 24" {...stroke} aria-hidden>
     <path d="M12 3l1.9 5.6 5.6 1.9-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z" />
   </svg>
 )
 
 function RawCaptureTag() {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-pill bg-sand-200 px-2.5 py-[3px] text-[11.5px] font-semibold text-sand-800 dark:bg-ink-inverse/12 dark:text-sand-300">
+    <span className={`${chip} bg-line text-text`}>
       <TargetIcon />
       raw capture
     </span>
@@ -86,29 +91,27 @@ function StoryCard({ story, onOpen }: { story: Story; onOpen: () => void }) {
       <button
         type="button"
         onClick={onOpen}
-        className={`w-full rounded-[20px] p-3.5 text-left active:scale-[0.99] ${
-          story.raw
-            ? 'border-[1.5px] border-dashed border-sand-600 dark:border-sand-500'
-            : 'bg-surface-raised shadow-sm dark:bg-surface-dark-raised'
+        className={`w-full rounded-card border p-4 text-left active:translate-y-px ${
+          story.raw ? 'border-dashed border-line-strong' : 'border-line bg-panel'
         }`}
       >
-        <p className="text-detail leading-[1.45] text-ink dark:text-ink-inverse">{story.title}</p>
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+        <p className="text-[15px] leading-[1.45] text-text">{story.title}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {story.raw ? (
             <RawCaptureTag />
           ) : (
             <span
-              className="inline-flex items-center rounded-pill bg-clay-100 px-2.5 py-[3px] text-[11.5px] font-bold tabular-nums text-clay-800 dark:bg-clay-900 dark:text-clay-300"
+              className={`${chip} bg-accent-soft text-accent`}
               title="WSJF: cost of delay over job size"
             >
               WSJF {wsjf.score}
             </span>
           )}
-          <span className="inline-flex items-center rounded-pill bg-sand-200 px-2.5 py-[3px] text-[11.5px] font-semibold tabular-nums text-sand-800 dark:bg-ink-inverse/12 dark:text-sand-300">
+          <span className={`${chip} bg-raised text-text-2`}>
             {story.jobSize} pt{story.jobSize === 1 ? '' : 's'}
           </span>
           {ac && (
-            <span className="inline-flex items-center gap-1 px-1 text-[11.5px] font-semibold tabular-nums text-sand-700 dark:text-sand-400">
+            <span className={`${chip} bg-raised text-text-2`}>
               <CheckIcon />
               {ac}
             </span>
@@ -121,7 +124,7 @@ function StoryCard({ story, onOpen }: { story: Story; onOpen: () => void }) {
 
 function DraftChip() {
   return (
-    <span className="inline-flex rounded-pill bg-sage-200 px-2 py-px text-[10px] font-semibold uppercase tracking-[0.06em] text-sage-800 dark:bg-sage-800 dark:text-sage-200">
+    <span className="inline-flex h-[18px] items-center rounded-pill bg-accent-soft px-2 font-mono text-[9.5px] font-medium uppercase tracking-[0.1em] text-accent">
       draft
     </span>
   )
@@ -130,12 +133,10 @@ function DraftChip() {
 function FieldLabel({ text, draft, right }: { text: string; draft: boolean; right?: string }) {
   return (
     <div className="mb-1.5 flex items-center gap-1.5">
-      <span className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
-        {text}
-      </span>
+      <span className={labelCls}>{text}</span>
       {draft && <DraftChip />}
       {right && (
-        <span className="ml-auto text-[11.5px] font-semibold tabular-nums text-sand-700 dark:text-sand-400">
+        <span className="ml-auto font-mono text-label tabular-nums text-text-3">
           {right}
         </span>
       )}
@@ -143,8 +144,8 @@ function FieldLabel({ text, draft, right }: { text: string; draft: boolean; righ
   )
 }
 
-// The 1f editor. In draft mode every field arrived from the grooming
-// assistant: sage chips mark them, the footer offers Accept / Re-draft,
+// The story editor. In draft mode every field arrived from the grooming
+// assistant: accent chips mark them, the footer offers Accept / Re-draft,
 // and Esc discards the draft leaving the raw capture untouched.
 function StoryEditor({
   story,
@@ -180,7 +181,7 @@ function StoryEditor({
     return () => window.removeEventListener('keydown', onKey, true)
   }, [draftMode, onClose])
 
-  const areaCls = inputCls.replace('rounded-pill', 'rounded-ctl') + ' py-2.5'
+  const areaCls = inputCls.replace('rounded-pill', 'rounded-inner').replace('bg-panel', 'bg-raised') + ' py-2.5'
   const liveWsjf =
     Math.round(((businessValue + timeCriticality + enablement) / jobSize) * 10) / 10
 
@@ -220,12 +221,12 @@ function StoryEditor({
     options: number[],
     unit = '',
   ) => (
-    <label className="flex min-h-tap items-center gap-2 rounded-pill border border-ink/15 bg-surface px-3.5 dark:border-ink-inverse/20 dark:bg-surface-dark-raised">
-      <span className="flex-none text-xs text-sand-700 dark:text-sand-400">{label}</span>
+    <label className="flex min-h-tap items-center gap-2 rounded-pill border border-line bg-raised px-3.5">
+      <span className={`flex-none ${labelCls}`}>{label}</span>
       <select
         value={value}
         onChange={(e) => set(Number(e.target.value))}
-        className="min-w-0 flex-1 appearance-none bg-transparent text-right text-[14px] font-semibold tabular-nums text-ink focus:outline-none dark:text-ink-inverse"
+        className="min-w-0 flex-1 appearance-none border-0 bg-transparent text-right font-mono text-[14px] tabular-nums text-text focus:shadow-none focus:outline-none"
       >
         {options.map((v) => (
           <option key={v} value={v}>
@@ -235,7 +236,7 @@ function StoryEditor({
         ))}
       </select>
       <svg
-        className="flex-none text-sand-600 dark:text-sand-500"
+        className="flex-none text-text-3"
         width="14"
         height="14"
         viewBox="0 0 24 24"
@@ -282,10 +283,10 @@ function StoryEditor({
           {criteria.map((text, i) => (
             <div key={i} className="flex min-h-tap items-center gap-3">
               <span
-                className={`size-[22px] flex-none rounded-[7px] border-2 ${
+                className={`size-[22px] flex-none rounded-[7px] border ${
                   story.acceptanceCriteria.find((c) => c.text === text.trim())?.done
-                    ? 'border-sage-600 bg-sage-600 dark:border-sage-500 dark:bg-sage-500'
-                    : 'border-sand-500 bg-surface-raised dark:border-sand-600 dark:bg-surface-dark-raised'
+                    ? 'border-accent bg-accent'
+                    : 'border-line-strong bg-raised'
                 }`}
                 aria-hidden
               />
@@ -295,13 +296,13 @@ function StoryEditor({
                   setCriteria((prev) => prev.map((t, j) => (j === i ? e.target.value : t)))
                 }
                 aria-label={`Criterion ${i + 1}`}
-                className="min-w-0 flex-1 border-b border-transparent bg-transparent text-detail leading-[1.4] text-ink focus:border-ink/25 focus:outline-none dark:text-ink-inverse dark:focus:border-ink-inverse/30"
+                className="min-w-0 flex-1 rounded-none border-b border-transparent bg-transparent text-[13.5px] leading-[1.4] text-text focus:border-line-strong focus:shadow-none focus:outline-none"
               />
               <button
                 type="button"
                 aria-label={`Remove criterion ${i + 1}`}
                 onClick={() => setCriteria((prev) => prev.filter((_, j) => j !== i))}
-                className="grid size-tap flex-none place-items-center rounded-pill text-sand-600 hover:bg-ink/6 dark:text-sand-500 dark:hover:bg-ink-inverse/8"
+                className="grid size-tap flex-none place-items-center rounded-pill text-text-3 hover:text-text"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
                   <path d="M18 6 6 18" />
@@ -313,7 +314,7 @@ function StoryEditor({
           <button
             type="button"
             onClick={() => setCriteria((prev) => [...prev, ''])}
-            className="flex min-h-tap items-center gap-2 text-detail font-semibold text-clay-700 dark:text-clay-300"
+            className="flex min-h-tap items-center gap-2 text-[13.5px] font-semibold text-accent hover:underline"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" {...stroke} aria-hidden>
               <path d="M12 5v14" />
@@ -331,16 +332,16 @@ function StoryEditor({
           {pillSelect('Unblocks', enablement, setEnablement, [1, 2, 3, 4, 5])}
           {pillSelect('Size', jobSize, setJobSize, [1, 2, 3, 5, 8], 'pts')}
         </div>
-        <div className="mt-2.5 flex items-baseline gap-2.5 px-0.5">
-          <span className="text-meta tabular-nums text-sand-700 dark:text-sand-400">
+        <div className="mt-3 flex items-baseline gap-2.5 px-0.5">
+          <span className="font-mono text-equation tabular-nums text-text-3">
             ({businessValue} + {timeCriticality} + {enablement}) ÷ {jobSize}
           </span>
-          <span className="ml-auto inline-flex items-center rounded-pill bg-clay-100 px-3 py-[3px] text-[12.5px] font-bold tabular-nums text-clay-800 dark:bg-clay-900 dark:text-clay-300">
+          <span className={`${chip} ml-auto bg-accent-soft text-accent`}>
             WSJF {liveWsjf}
           </span>
         </div>
       </div>
-      <div className="-mx-5 mt-3.5 border-t border-ink/12 px-5 pt-3 dark:border-ink-inverse/15">
+      <div className="-mx-5 mt-4 border-t border-line px-5 pt-3">
         {draftMode ? (
           <>
             <div className="flex gap-2">
@@ -356,12 +357,12 @@ function StoryEditor({
                 type="button"
                 onClick={save}
                 disabled={update.isPending}
-                className={`${clayBtn} flex-[1.5]`}
+                className={`${primaryBtn} flex-[1.5]`}
               >
                 Accept draft
               </button>
             </div>
-            <p className="pb-1 pt-2 text-center text-[11.5px] text-sand-700 dark:text-sand-400">
+            <p className="pb-1 pt-2.5 text-center text-[12px] text-text-3">
               Esc discards the draft and keeps the raw capture
             </p>
           </>
@@ -374,7 +375,7 @@ function StoryEditor({
               type="button"
               onClick={save}
               disabled={update.isPending}
-              className={`${clayBtn} flex-[1.5]`}
+              className={`${primaryBtn} flex-[1.5]`}
             >
               Save
             </button>
@@ -385,7 +386,7 @@ function StoryEditor({
   )
 }
 
-// The 1e move flow: destination rows with radio semantics, nothing moves
+// The move flow: destination rows with radio semantics, nothing moves
 // until the confirm button. Selection resets when the sheet reopens.
 function MoveTo({ story }: { story: Story }) {
   const update = useUpdateStory()
@@ -401,8 +402,8 @@ function MoveTo({ story }: { story: Story }) {
 
   return (
     <div className="mt-4">
-      <p className="text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">Move to</p>
-      <div role="radiogroup" aria-label="Move to" className="mt-2 flex flex-col gap-[7px]">
+      <p className={labelCls}>Move to</p>
+      <div role="radiogroup" aria-label="Move to" className="mt-2.5 flex flex-col gap-[7px]">
         {statuses.map((s) => {
           const current = s === story.status
           const selected = picked === s
@@ -414,34 +415,34 @@ function MoveTo({ story }: { story: Story }) {
               aria-checked={selected}
               disabled={current}
               onClick={() => setPicked(selected ? null : s)}
-              className={`flex min-h-[52px] items-center gap-3 rounded-[18px] px-4 text-left ${
+              className={`flex min-h-[52px] items-center gap-3 rounded-inner border px-4 text-left disabled:opacity-60 ${
                 selected
-                  ? 'border-2 border-clay-500 bg-clay-100 dark:border-clay-400 dark:bg-clay-900'
-                  : 'border-[1.5px] border-ink/16 hover:bg-ink/4 disabled:hover:bg-transparent dark:border-ink-inverse/20 dark:hover:bg-ink-inverse/6'
+                  ? 'border-accent bg-accent-soft'
+                  : 'border-line hover:bg-raised disabled:hover:bg-transparent'
               }`}
             >
               <span
-                className={`size-[18px] flex-none rounded-pill ${
+                className={`size-[18px] flex-none rounded-pill border ${
                   selected
-                    ? 'border-[1.5px] border-clay bg-clay [box-shadow:inset_0_0_0_4px_var(--color-clay-100)] dark:[box-shadow:inset_0_0_0_4px_var(--color-clay-900)]'
-                    : 'border-[1.5px] border-sand-500'
+                    ? 'border-accent bg-accent [box-shadow:inset_0_0_0_4px_var(--color-panel)]'
+                    : 'border-line-strong'
                 }`}
               />
-              <span className="text-[14.5px] font-semibold text-ink dark:text-ink-inverse">
+              <span className="text-[14.5px] font-semibold text-text">
                 {storyStatusLabels[s]}
               </span>
               {current && (
-                <span className="ml-auto inline-flex items-center rounded-pill bg-sand-200 px-2.5 py-0.5 text-micro font-semibold normal-case tracking-normal text-sand-800 dark:bg-ink-inverse/12 dark:text-sand-300">
+                <span className="ml-auto inline-flex h-[22px] items-center rounded-pill bg-raised px-2.5 font-mono text-label uppercase text-text-2">
                   current
                 </span>
               )}
               {!current && s === 'later' && (
-                <span className="ml-auto text-xs text-sand-700 dark:text-sand-400">
+                <span className="ml-auto font-mono text-[11px] text-text-3">
                   out of the math
                 </span>
               )}
               {selected && s !== 'later' && (
-                <span className="ml-auto text-clay-700 dark:text-clay-300">
+                <span className="ml-auto text-accent">
                   <CheckIcon size={17} />
                 </span>
               )}
@@ -458,7 +459,7 @@ function MoveTo({ story }: { story: Story }) {
             type="button"
             onClick={confirm}
             disabled={update.isPending}
-            className={`${clayBtn} flex-[1.5]`}
+            className={`${primaryBtn} flex-[1.5]`}
           >
             Move to {storyStatusLabels[picked]}
           </button>
@@ -517,7 +518,7 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
             {story.raw ? (
               <RawCaptureTag />
             ) : (
-              <span className="inline-flex items-center rounded-pill bg-sand-200 px-2.5 py-[3px] text-[11.5px] font-semibold text-sand-800 dark:bg-ink-inverse/12 dark:text-sand-300">
+              <span className={`${chip} bg-raised text-text-2`}>
                 {storyStatusLabels[story.status]}
               </span>
             )}
@@ -525,7 +526,7 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="-mt-2 ml-auto grid size-tap flex-none place-items-center rounded-pill text-sand-800 hover:bg-ink/7 dark:text-sand-300 dark:hover:bg-ink-inverse/10"
+              className="-mt-2 ml-auto grid size-tap flex-none place-items-center rounded-pill text-text-3 hover:text-text"
             >
               <svg width="19" height="19" viewBox="0 0 24 24" {...stroke} aria-hidden>
                 <path d="M18 6 6 18" />
@@ -536,10 +537,10 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
 
           {draft && draftStory ? (
             <div className="mt-1.5">
-              <h2 className="font-display text-[21px] text-ink dark:text-ink-inverse">
+              <h2 className="text-[21px] font-semibold leading-[1.2] tracking-[-0.01em] text-text">
                 Groom this story
               </h2>
-              <p className="mt-3 flex items-start gap-2 rounded-ctl bg-sage-100 px-3 py-2.5 text-meta leading-[1.45] text-sage-800 dark:bg-sage-900 dark:text-sage-200">
+              <p className="mt-3 flex items-start gap-2 rounded-inner bg-raised px-3 py-2.5 text-meta text-text-2">
                 <SparkIcon />
                 <span>
                   {draftSourceLabel[draft.source]} {draft.rationale} Nothing counts until you
@@ -563,59 +564,59 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
             </div>
           ) : (
             <>
-              <h2 className="mt-2.5 text-[14.5px] font-semibold leading-[1.4] text-ink dark:text-ink-inverse">
+              <h2 className="mt-3 text-[15px] font-semibold leading-[1.4] text-text">
                 {story.title}
               </h2>
               {story.description && (
-                <p className="mt-2 text-detail text-sand-800 dark:text-sand-300">
+                <p className="mt-2 text-[13.5px] leading-[1.5] text-text-2">
                   {story.description}
                 </p>
               )}
 
               {story.raw ? (
-                <div className="mt-3 rounded-ctl bg-sage-100 px-3.5 py-3 dark:bg-sage-900">
-                  <p className="flex items-start gap-2 text-meta leading-[1.45] text-sage-800 dark:text-sage-200">
+                <div className="mt-3 rounded-inner bg-raised px-3.5 py-3">
+                  <p className="flex items-start gap-2 text-meta text-text-2">
                     <SparkIcon />
                     <span>
                       Raw capture: not yet in story form, unscored. Grooming drafts a story for
                       review; nothing counts until you accept it.
                     </span>
                   </p>
-                  <button type="button" onClick={groom} disabled={drafting} className={`${clayBtn} mt-2.5`}>
+                  <button type="button" onClick={groom} disabled={drafting} className={`${primaryBtn} mt-3`}>
                     {drafting ? 'Drafting…' : 'Groom this'}
                   </button>
                 </div>
               ) : (
-                <p className="mt-3 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-meta text-sand-700 dark:text-sand-400">
-                  <span className="tabular-nums">
+                <p className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+                  <span className="font-mono text-equation tabular-nums text-text-3">
                     value {story.businessValue} + urgency {story.timeCriticality} + unblocks{' '}
                     {story.enablement}, ÷ size {story.jobSize}
                   </span>
-                  <span className="inline-flex items-center rounded-pill bg-clay-100 px-3 py-[3px] text-[12.5px] font-bold tabular-nums text-clay-800 dark:bg-clay-900 dark:text-clay-300">
+                  <span className={`${chip} bg-accent-soft text-accent`}>
                     WSJF {wsjf.score}
                   </span>
                 </p>
               )}
 
               {story.acceptanceCriteria.length > 0 && (
-                <fieldset className="mt-3">
-                  <legend className="flex items-center gap-1.5 text-micro font-semibold uppercase text-sand-700 dark:text-sand-400">
+                <fieldset className="mt-4">
+                  <legend className={`flex items-center gap-2 ${labelCls}`}>
                     Acceptance criteria
-                    <span className="tabular-nums normal-case tracking-normal">
+                    <span className="tabular-nums">
                       {acProgress(story)}
                     </span>
                   </legend>
                   <ul className="mt-0.5">
                     {story.acceptanceCriteria.map((c, i) => (
                       <li key={c.text}>
-                        <label className="flex min-h-tap cursor-pointer items-center gap-3 text-detail leading-[1.4] text-ink dark:text-ink-inverse">
+                        <label className="flex min-h-tap cursor-pointer items-center gap-3 text-[13.5px] leading-[1.4] text-text">
                           <input
                             type="checkbox"
                             checked={c.done}
                             onChange={() => toggleCriterion(i)}
-                            className="size-[22px] flex-none appearance-none rounded-[7px] border-2 border-sand-500 bg-surface-raised checked:border-sage-600 checked:bg-sage-600 dark:border-sand-600 dark:bg-surface-dark-raised dark:checked:border-sage-500 dark:checked:bg-sage-500"
+                            className={checkboxCls}
                           />
-                          <span className={c.done ? 'text-sand-600 line-through dark:text-sand-500' : ''}>
+                          <span className={c.done ? 'text-text-3 line-through' : ''}>
                             {c.text}
                           </span>
                         </label>
@@ -627,7 +628,7 @@ function StorySheet({ story, onClose }: { story: Story; onClose: () => void }) {
 
               <MoveTo story={story} />
 
-              <div className="mt-4 border-t border-ink/12 pt-3 dark:border-ink-inverse/15">
+              <div className="mt-4 border-t border-line pt-3">
                 <button type="button" onClick={() => setEditing(true)} className={outlineBtn}>
                   Edit story
                 </button>
@@ -668,14 +669,14 @@ function CaptureIdea() {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Capture an idea…"
-        className={inputCls}
+        className={`${inputCls} min-h-[46px]`}
         aria-label="Capture an idea"
       />
       <button
         type="submit"
         disabled={!title.trim() || create.isPending}
         aria-label="Add idea"
-        className="grid size-tap flex-none place-items-center rounded-pill bg-clay-500 text-ink hover:bg-clay-400 active:scale-95 disabled:opacity-50 dark:bg-clay-400 dark:hover:bg-clay-300"
+        className="grid size-[46px] flex-none place-items-center rounded-pill bg-accent text-accent-ink hover:bg-accent-hover active:translate-y-px disabled:opacity-45"
       >
         <svg width="19" height="19" viewBox="0 0 24 24" {...stroke} aria-hidden>
           <path d="M12 5v14" />
@@ -705,10 +706,10 @@ export function Product() {
   }
 
   return (
-    <main className="pt-3">
+    <main className="pt-[18px]">
       <div className="mx-auto max-w-lg px-5">
-        <h1 className="font-display text-display">Product</h1>
-        <p className="mt-1 text-[13px] leading-[1.5] text-sand-700 dark:text-sand-400">
+        <h1 className="text-title text-text">Product</h1>
+        <p className="mt-3 text-body text-text-2">
           The app's own roadmap, managed in the open as a kanban board of user-story tickets, each
           with acceptance criteria and a Weighted Shortest Job First (WSJF) score. Tap a card to read
           it or move it between columns; raw captures can be groomed into a full story.
@@ -720,7 +721,7 @@ export function Product() {
         loadingLabel="Loading the backlog…"
         className="mx-auto mt-3 max-w-lg px-5"
       >
-        <div className="mx-auto flex max-w-lg gap-1.5 overflow-x-auto px-5 py-3" role="tablist" aria-label="Columns">
+        <div className="mx-auto flex max-w-lg gap-1.5 overflow-x-auto px-5 py-4" role="tablist" aria-label="Columns">
           {COLUMNS.map((col) => {
             const n = stories.filter((s) => s.status === col.status).length
             const active = activeCol === col.status
@@ -731,14 +732,12 @@ export function Product() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => jumpTo(col.status)}
-                className={`relative inline-flex min-h-9 flex-none items-center gap-1.5 rounded-pill px-3.5 text-[12.5px] before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
-                  active
-                    ? 'bg-ink font-semibold text-ink-inverse dark:bg-ink-inverse dark:text-ink'
-                    : 'border border-ink/20 text-sand-800 hover:bg-ink/5 dark:border-ink-inverse/25 dark:text-sand-300 dark:hover:bg-ink-inverse/8'
+                className={`relative inline-flex min-h-[34px] flex-none items-center gap-2 rounded-pill border border-line-strong px-3.5 font-mono text-label uppercase before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
+                  active ? 'bg-raised text-text' : 'text-text-3 hover:text-text'
                 }`}
               >
                 {col.label}
-                <span className={`tabular-nums ${active ? 'text-sand-400 dark:text-sand-600' : 'text-sand-600 dark:text-sand-500'}`}>
+                <span className="tabular-nums text-accent">
                   {n}
                 </span>
               </button>
@@ -756,13 +755,13 @@ export function Product() {
               <section
                 key={col.status}
                 data-col={col.status}
-                className="w-[312px] max-w-[85vw] shrink-0 snap-center rounded-card bg-sand-200 p-3 dark:bg-surface-dark"
+                className="w-[312px] max-w-[85vw] shrink-0 snap-center p-1.5"
               >
-                <h2 className="flex items-baseline gap-2 px-1.5 pb-2.5 pt-0.5">
-                  <span className="font-display text-card font-normal text-ink dark:text-ink-inverse">
+                <h2 className="flex items-baseline gap-2 px-1 pb-3 pt-0.5 font-mono text-label uppercase text-text-3">
+                  <span>
                     {col.label}
                   </span>
-                  <span className="text-xs font-semibold text-sand-700 dark:text-sand-400">
+                  <span className="tabular-nums text-accent">
                     {colStories.length}
                   </span>
                 </h2>
@@ -776,7 +775,7 @@ export function Product() {
                     <StoryCard key={s.id} story={s} onOpen={() => setOpenId(s.id)} />
                   ))}
                   {colStories.length === 0 && (
-                    <p className="px-1 py-4 text-center text-detail text-sand-600 dark:text-sand-500">
+                    <p className="px-1 py-4 text-center text-body text-text-3">
                       Empty
                     </p>
                   )}
@@ -786,29 +785,29 @@ export function Product() {
           })}
         </div>
 
-        <div className="mx-auto max-w-lg px-3.5 pb-4">
+        <div className="mx-auto max-w-lg px-5 pb-4">
           {later.length > 0 && (
-            <section className="mt-2.5">
+            <section className="mt-2.5 border-t border-dotted border-line-strong">
               <button
                 type="button"
                 aria-expanded={showLater}
                 onClick={() => setShowLater((v) => !v)}
-                className="flex min-h-tap w-full items-center gap-2 rounded-pill bg-sand-200 px-[18px] text-[13px] text-sand-800 hover:bg-sand-300 dark:bg-surface-dark dark:text-sand-300 dark:hover:bg-surface-dark-raised"
+                className="flex min-h-tap w-full items-center gap-2 font-mono text-label uppercase text-text-3 hover:text-text"
               >
+                Later ({later.length}): v3 candidates, parked out of the arithmetic
                 <svg
-                  className={`flex-none text-sand-600 dark:text-sand-500 ${showLater ? 'rotate-90' : ''}`}
-                  width="15"
-                  height="15"
+                  className={`ml-auto flex-none transition-transform ${showLater ? 'rotate-90' : ''}`}
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   {...stroke}
                   aria-hidden
                 >
                   <path d="m9 18 6-6-6-6" />
                 </svg>
-                Later ({later.length}): v3 candidates, parked out of the arithmetic
               </button>
               {showLater && (
-                <ul className="mt-3 space-y-2">
+                <ul className="mt-1 space-y-2 pb-2">
                   {later.map((s) => (
                     <StoryCard key={s.id} story={s} onOpen={() => setOpenId(s.id)} />
                   ))}

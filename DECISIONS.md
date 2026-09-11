@@ -517,6 +517,28 @@ hosted Supabase.
     the screen uses, so the event can never disagree with the arithmetic the
     card shows. The default is unchanged and a test pins that.
 
+## v2.7: Ember
+
+68. **One theme, one accent, one lit thing.** The Organic direction (cream
+    ground, terracotta and sage, Caprasimo) is replaced by Ember
+    (`design/EMBER.md`): a cool near-black ground with warm off-white type,
+    Archivo for prose and Geist Mono for anything that is a measurement.
+    Exactly one panel per screen carries the accent border and glow (the #1
+    readout, the focused field, the active tab); lists are dotted rules, not
+    cards. Terracotta is reserved for time and action (deadline points, the
+    staleness multiplier, the primary button, the in-progress dot), and
+    there is no second accent: unblocks, momentum and Done read in plain
+    white so orange means time pressure and white means flow. Overdue stays
+    the only red. The light theme and its toggle are gone rather than left
+    as dead plumbing, because a toggle that does nothing is a broken
+    control. The restyle kept every screen's DOM shape and copy; the only
+    additions are readouts the design specifies and the data already
+    carries (the staleness gauge and multiplier on Put off, area and column
+    counts, "· blocked" in a project row's margin). The verify drive's
+    selectors moved from Organic utility names to Ember type roles
+    (`.text-row`, `.text-factor`, `.rounded-inner`), which is the one
+    place the design names leak into a test.
+
 ## Cut from v1 (deliberately)
 
 - Auth / multi-user; Asana API integration (data model is shaped for it).

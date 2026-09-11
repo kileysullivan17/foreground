@@ -6,9 +6,10 @@ import type { UseQueryResult } from '@tanstack/react-query'
 // so no screen silently shows an empty list while data is still loading or
 // after a fetch failed. Header and controls stay mounted around it.
 //
-// Loading keeps the destination's shape (1i): the 'foreground' variant
-// pulses the ink-panel silhouette, 'cards' pulses list cards. Errors stay
-// calm; red is reserved for overdue deadlines, so the alert wears clay.
+// Loading keeps the destination's shape: the 'foreground' variant lays out
+// the lit panel's silhouette in raised bars, 'cards' lays out dotted-rule
+// rows. No spinners; one blinking accent dot marks the wait. Errors stay
+// calm: the panel takes the overdue border, and retry is an outlined pill.
 
 type GateQuery = Pick<UseQueryResult, 'isPending' | 'isError' | 'refetch'>
 
@@ -29,16 +30,16 @@ export function QueryStates({
     return (
       <div
         role="alert"
-        className={`mt-1.5 rounded-card bg-surface px-5 py-6 text-center dark:bg-surface-dark ${className}`}
+        className={`mt-1.5 rounded-panel border border-overdue/40 bg-panel px-5 py-6 text-center ${className}`}
       >
-        <span className="inline-grid size-[46px] place-items-center rounded-pill bg-clay-100 text-clay-700 dark:bg-clay-900 dark:text-clay-300">
+        <span className="inline-grid size-[46px] place-items-center rounded-pill bg-raised text-overdue">
           <svg
             width="21"
             height="21"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.75"
+            strokeWidth="2.25"
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
@@ -48,16 +49,16 @@ export function QueryStates({
             <path d="M12 16h.01" />
           </svg>
         </span>
-        <p className="mt-3 text-[16.5px] font-semibold text-ink dark:text-ink-inverse">
+        <p className="mt-3 text-[16.5px] font-semibold text-text">
           Could not load your data
         </p>
-        <p className="mt-1 text-[13px] leading-[1.5] text-sand-700 dark:text-sand-400">
+        <p className="mt-1 text-[13px] leading-[1.5] text-text-2">
           Your items are safe on this device; nothing was lost.
         </p>
         <button
           type="button"
           onClick={() => queries.forEach((q) => void q.refetch())}
-          className="mt-4 inline-flex min-h-[46px] items-center justify-center rounded-pill bg-clay-500 px-8 font-display text-[14.5px] text-ink hover:bg-clay-400 active:scale-95 dark:bg-clay-400 dark:hover:bg-clay-300"
+          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-pill border border-line-strong px-8 text-[14px] font-semibold text-text hover:border-text active:translate-y-px"
         >
           Try again
         </button>
@@ -66,28 +67,39 @@ export function QueryStates({
   }
 
   if (queries.some((q) => q.isPending)) {
+    const bar = 'rounded-pill bg-raised'
     return (
       <div className={className}>
         <div className="mb-3.5 flex items-center gap-2.5 px-1.5">
-          <span
-            className="size-[18px] animate-spin rounded-pill border-[3px] border-sand-300 border-t-clay-500 dark:border-sand-700 dark:border-t-clay-400"
-            aria-hidden
-          />
-          <span className="text-[13px] text-sand-700 dark:text-sand-400">{loadingLabel}</span>
+          <span className="fg-blink size-[7px] rounded-pill bg-accent" aria-hidden />
+          <span className="text-[13px] text-text-2">{loadingLabel}</span>
         </div>
         {variant === 'foreground' && (
-          <div className="animate-pulse rounded-hero bg-sand-300 p-5 dark:bg-surface-dark-raised">
-            <div className="h-2.5 w-[110px] rounded-pill bg-sand-200 dark:bg-surface-dark" />
-            <div className="mt-4 h-5 w-[220px] rounded-pill bg-sand-200 dark:bg-surface-dark" />
-            <div className="mt-3 h-3 w-[140px] rounded-pill bg-sand-200 dark:bg-surface-dark" />
-            <div className="mt-[18px] h-[92px] rounded-ctl bg-sand-200 dark:bg-surface-dark" />
+          <div className="rounded-panel border border-line bg-panel p-[18px]">
+            <div className={`h-2.5 w-[110px] ${bar}`} />
+            <div className={`mt-4 h-5 w-[220px] ${bar}`} />
+            <div className={`mt-3 h-3 w-[140px] ${bar}`} />
+            <div className="mt-[18px] flex flex-col gap-2 border-t border-dotted border-line-strong pt-3.5">
+              <div className={`h-3 w-full ${bar}`} />
+              <div className={`h-3 w-4/5 ${bar}`} />
+              <div className={`h-3 w-3/5 ${bar}`} />
+            </div>
           </div>
         )}
-        <div className="mt-3 h-[84px] animate-pulse rounded-card bg-sand-300/70 [animation-delay:0.2s] dark:bg-surface-dark" />
-        <div className="mt-2.5 h-[84px] animate-pulse rounded-card bg-sand-300/70 [animation-delay:0.4s] dark:bg-surface-dark" />
-        {variant === 'cards' && (
-          <div className="mt-2.5 h-[84px] animate-pulse rounded-card bg-sand-300/70 [animation-delay:0.6s] dark:bg-surface-dark" />
-        )}
+        <div className="mx-1.5 mt-[18px] border-b border-dotted border-line-strong">
+          {[0, 1, variant === 'cards' ? 2 : -1]
+            .filter((i) => i >= 0)
+            .map((i) => (
+              <div key={i} className="grid grid-cols-[26px_minmax(0,1fr)_auto] gap-x-2 border-t border-dotted border-line-strong py-[14px]">
+                <div className={`h-3 w-4 ${bar}`} />
+                <div>
+                  <div className={`h-3.5 w-3/4 ${bar}`} />
+                  <div className={`mt-2 h-2.5 w-1/2 ${bar}`} />
+                </div>
+                <div className={`h-4 w-8 ${bar}`} />
+              </div>
+            ))}
+        </div>
       </div>
     )
   }

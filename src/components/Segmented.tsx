@@ -3,32 +3,39 @@ interface SegmentedProps<T extends string> {
   value: T
   onChange: (value: T) => void
   label?: string
+  /** 'sm' is the 34px in-row control; 'md' is the 40px form field. */
+  size?: 'sm' | 'md'
+  className?: string
 }
 
-/** Small form-level segmented control in the Organic language: one pill
- *  outline, the checked option filled clay. List screens use FilterChips
- *  instead; this stays for compact form fields (area, effort). */
-export function Segmented<T extends string>({ options, value, onChange, label }: SegmentedProps<T>) {
+/** Form-level segmented control in the Ember language: one outlined pill
+ *  with 3px inset, the checked option on the raised fill, mono uppercase
+ *  labels. List screens use FilterChips for the same look with a filter's
+ *  radio semantics. */
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+  label,
+  size = 'sm',
+  className = '',
+}: SegmentedProps<T>) {
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className="inline-flex overflow-hidden rounded-pill border border-ink/18 dark:border-ink-inverse/22"
+      className={`inline-flex rounded-pill border border-line-strong p-[3px] ${className}`}
     >
-      {options.map((opt, i) => (
+      {options.map((opt) => (
         <button
           key={opt.value}
           type="button"
           role="radio"
           aria-checked={opt.value === value}
           onClick={() => onChange(opt.value)}
-          className={`min-h-tap px-4 text-[13.5px] transition-colors ${
-            i > 0 ? 'border-l border-ink/18 dark:border-ink-inverse/22' : ''
-          } ${
-            opt.value === value
-              ? 'bg-clay-500 font-semibold text-ink dark:bg-clay-400'
-              : 'text-sand-800 hover:bg-ink/5 dark:text-sand-300 dark:hover:bg-ink-inverse/8'
-          }`}
+          className={`flex-1 rounded-pill px-4 font-mono text-label uppercase transition-colors ${
+            size === 'md' ? 'min-h-10' : 'min-h-[34px]'
+          } ${opt.value === value ? 'bg-raised text-text' : 'text-text-3 hover:text-text'}`}
         >
           {opt.label}
         </button>

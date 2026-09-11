@@ -1,14 +1,14 @@
 import type { ScoredItem, ScoreFactor } from '../scoring/score'
 
 // Presentation-only helpers for the score ledger: split factors into the
-// receipt's bold-label/quiet-detail shape and compress them into one line.
+// receipt's label/detail shape and compress them into one line.
 // No arithmetic happens here; the scoring module owns the numbers.
 
 export const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
 
 export const isOverdue = (f: ScoreFactor) => f.key === 'deadline' && f.label.startsWith('Overdue')
 
-/** Split a scoring factor into the ledger's bold label + quiet detail. */
+/** Split a scoring factor into the ledger's label + quiet detail. */
 export function factorParts(f: ScoreFactor, importance: number): { label: string; detail: string } {
   switch (f.key) {
     case 'deadline':
@@ -22,17 +22,36 @@ export function factorParts(f: ScoreFactor, importance: number): { label: string
   }
 }
 
-/** One collapsed line of the arithmetic, for a card that isn't open. */
-export function teaserLine(scored: ScoredItem): string {
-  const parts = scored.delayFactors.map((f) => {
-    if (f.key === 'deadline') return `${lower(f.label)} +${f.points}`
-    if (f.key === 'importance') return `+${f.points} importance`
-    if (f.key === 'unblocks') return `+${f.points} unblocks`
-    return `+${f.points} momentum`
+/** Color role for one piece of the collapsed line: time pressure reads in
+ *  the accent, an overdue deadline in the one red, everything else plain. */
+export type TeaserTone = 'accent' | 'overdue' | 'text'
+
+export interface TeaserPart {
+  text: string
+  tone: TeaserTone
+}
+
+/** The collapsed arithmetic as parts, so the UI can color time pressure
+ *  without changing the words. Joined with " · " they make `teaserLine`. */
+export function teaserParts(scored: ScoredItem): TeaserPart[] {
+  const parts: TeaserPart[] = scored.delayFactors.map((f) => {
+    if (f.key === 'deadline')
+      return { text: `${lower(f.label)} +${f.points}`, tone: isOverdue(f) ? 'overdue' : 'accent' }
+    if (f.key === 'importance') return { text: `+${f.points} importance`, tone: 'text' }
+    if (f.key === 'unblocks') return { text: `+${f.points} unblocks`, tone: 'text' }
+    return { text: `+${f.points} momentum`, tone: 'text' }
   })
-  parts.push(`÷ ${scored.size.divisor}`)
-  if (scored.staleness) parts.push(`× ${scored.staleness.multiplier} stale`)
-  return parts.join(' · ')
+  parts.push({ text: `÷ ${scored.size.divisor}`, tone: 'text' })
+  if (scored.staleness) parts.push({ text: `× ${scored.staleness.multiplier} stale`, tone: 'accent' })
+  return parts
+}
+
+/** One collapsed line of the arithmetic, for a card that isn't open. The
+ *  full string, always: the UI wraps it and never ellipsizes. */
+export function teaserLine(scored: ScoredItem): string {
+  return teaserParts(scored)
+    .map((p) => p.text)
+    .join(' · ')
 }
 
 /** The equation restated in one line: adds, divide, multiplier. */
